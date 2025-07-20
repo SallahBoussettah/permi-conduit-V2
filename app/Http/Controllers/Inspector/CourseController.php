@@ -36,12 +36,51 @@ class CourseController extends Controller
     /**
      * Display a listing of the courses.
      *
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
-        $courses = Course::orderBy('title')->paginate(10);
-        return view('inspector.courses.index', compact('courses'));
+        $query = Course::with(['permitCategory', 'materials']);
+        
+        // Filter by permit category if specified
+        $selectedPermitCategory = $request->input('permit_category');
+        if ($selectedPermitCategory === 'null') {
+            // Show courses with no permit category
+            $query->whereNull('permit_category_id');
+        } elseif (!empty($selectedPermitCategory)) {
+            // Show courses for specific permit category
+            $query->where('permit_category_id', $selectedPermitCategory);
+        }
+        
+        // Filter by course type (auto-seeded vs custom)
+        $courseType = $request->input('course_type');
+        if ($courseType === 'auto_seeded') {
+            $query->where('is_auto_seeded', true);
+        } elseif ($courseType === 'custom') {
+            $query->where('is_auto_seeded', false);
+        }
+        
+        // Search functionality
+        $search = $request->input('search');
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('exam_section', 'like', "%{$search}%");
+            });
+        }
+        
+        // Order by sequence for auto-seeded courses, then by title
+        $courses = $query->orderBy('is_auto_seeded', 'desc')
+                        ->orderBy('sequence_order')
+                        ->orderBy('title')
+                        ->paginate(12);
+        
+        // Get permit categories for filter dropdown
+        $permitCategories = PermitCategory::where('status', true)->orderBy('name')->get();
+        
+        return view('inspector.courses.index', compact('courses', 'permitCategories', 'selectedPermitCategory', 'courseType', 'search'));
     }
 
     /**

@@ -157,18 +157,43 @@
             <!-- Course Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($courses as $course)
-                    <div class="bg-white rounded-lg shadow overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-yellow-300 hover:border border border-gray-200">
+                    @php
+                        $isLocked = isset($course->lock_status) && $course->lock_status['is_locked'];
+                        $lockReason = isset($course->lock_status) ? $course->lock_status['lock_reason'] : null;
+                    @endphp
+                    <div class="bg-white rounded-lg shadow overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-yellow-300 hover:border border border-gray-200 {{ $isLocked ? 'opacity-75' : '' }}">
                         <!-- Course Thumbnail -->
                         <div class="relative h-40 bg-gray-200">
                             @if($course->thumbnail)
-                                <img src="{{ asset('storage/' . $course->thumbnail) }}" alt="{{ $course->title }}" class="w-full h-full object-cover">
+                                <img src="{{ asset('storage/' . $course->thumbnail) }}" alt="{{ $course->title }}" class="w-full h-full object-cover {{ $isLocked ? 'filter grayscale' : '' }}">
                             @else
-                                <div class="flex items-center justify-center w-full h-full bg-yellow-100 text-yellow-700">
+                                <div class="flex items-center justify-center w-full h-full bg-yellow-100 text-yellow-700 {{ $isLocked ? 'bg-gray-100 text-gray-500' : '' }}">
                                     <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                                     </svg>
                                 </div>
                             @endif
+                            
+                            <!-- Lock Overlay -->
+                            @if($isLocked)
+                                <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                    <div class="text-center text-white">
+                                        <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                        </svg>
+                                        <p class="text-xs font-medium">Verrouillé</p>
+                                    </div>
+                                </div>
+                            @endif
+                            
+                            <!-- Course Type and Sequence Badge -->
+                            <div class="absolute top-2 left-2">
+                                @if($course->is_auto_seeded && $course->exam_section)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        {{ $course->sequence_order }}. {{ $course->exam_section }}
+                                    </span>
+                                @endif
+                            </div>
                             
                             <!-- Permit Category Badge -->
                             @if($course->permit_category_id)
@@ -249,27 +274,41 @@
                                     {{ $course->materials_count ?? 0 }} {{ __('Matériaux') }}
                                 </div>
                                 
-                                <a href="{{ route('candidate.courses.show', $course) }}" 
-                                   class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
-                                    @if($course->progress_percentage > 0 && $course->progress_percentage < 100)
-                                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        {{ __('Continuer') }}
-                                    @elseif($course->progress_percentage == 100)
-                                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                        </svg>
-                                        {{ __('Revoir') }}
-                                    @else
-                                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                        </svg>
-                                        {{ __('Commencer') }}
-                                    @endif
-                                </a>
+                                @if($isLocked)
+                                    <div class="text-center">
+                                        <button disabled class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-500 bg-gray-100 cursor-not-allowed">
+                                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                            </svg>
+                                            {{ __('Verrouillé') }}
+                                        </button>
+                                        @if($lockReason)
+                                            <p class="mt-2 text-xs text-red-600 text-center">{{ $lockReason }}</p>
+                                        @endif
+                                    </div>
+                                @else
+                                    <a href="{{ route('candidate.courses.show', $course) }}" 
+                                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                                        @if($course->progress_percentage > 0 && $course->progress_percentage < 100)
+                                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            {{ __('Continuer') }}
+                                        @elseif($course->progress_percentage == 100)
+                                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                            </svg>
+                                            {{ __('Revoir') }}
+                                        @else
+                                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                            </svg>
+                                            {{ __('Commencer') }}
+                                        @endif
+                                    </a>
+                                @endif
                             </div>
                         </div>
                     </div>

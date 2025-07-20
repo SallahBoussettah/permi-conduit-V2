@@ -30,6 +30,8 @@ class Course extends Model
         'is_auto_seeded',
         'exam_section',
         'sequence_order',
+        'prerequisite_courses',
+        'requires_sequential_completion',
         'created_by',
         'updated_by',
         'deleted_by',
@@ -38,6 +40,8 @@ class Course extends Model
     protected $casts = [
         'status' => 'boolean',
         'is_auto_seeded' => 'boolean',
+        'prerequisite_courses' => 'array',
+        'requires_sequential_completion' => 'boolean',
     ];
 
     /**
@@ -183,5 +187,103 @@ class Course extends Model
             return asset('storage/' . $this->thumbnail);
         }
         return asset('images/default-course-thumbnail.jpg');
+    }
+
+    /**
+     * Check if a user can access this course based on prerequisites.
+     *
+     * @param  \App\Models\User|int  $user
+     * @return bool
+     */
+    public function canBeAccessedBy($user)
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+        
+        // If no prerequisites are required, course is accessible
+        if (!$this->requires_sequential_completion || empty($this->prerequisite_courses)) {
+            return true;
+        }
+        
+        // Check if all prerequisite courses are completed
+        foreach ($this->prerequisite_courses as $prerequisiteCourseId) {
+            $prerequisiteCourse = Course::find($prerequisiteCourseId);
+            if (!$prerequisiteCourse || !$prerequisiteCourse->isCompletedBy($userId)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    /**
+     * Get the prerequisite courses that are not yet completed by the user.
+     *
+     * @param  \App\Models\User|int  $user
+     * @return \Illuminate\Support\Collection
+     */
+    public function getIncompletePrerequisites($user)
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+        $incompletePrerequisites = collect();
+        
+        if (!$this->requires_sequential_completion || empty($this->prerequisite_courses)) {
+            return $incompletePrerequisites;
+        }
+        
+        foreach ($this->prerequisite_courses as $prerequisiteCourseId) {
+            $prerequisiteCourse = Course::find($prerequisiteCourseId);
+            if ($prerequisiteCourse && !$prerequisiteCourse->isCompletedBy($userId)) {
+                $incompletePrerequisites->push($prerequisiteCourse);
+            }
+        }
+        
+        return $incompletePrerequisites;
+    }
+
+    /**
+     * Get the lock status for this course for a specific user.
+     *
+     * @param  \App\Models\User|int  $user
+     * @return array
+     */
+    public function getLockStatus($user)
+    {
+        $canAccess = $this->canBeAccessedBy($user);
+        $incompletePrerequisites = $this->getIncompletePrerequisites($user);
+        
+        return [
+            'is_locked' => !$canAccess,
+            'can_access' => $canAccess,
+            'incomplete_prerequisites' => $incompletePrerequisites,
+            'lock_reason' => !$canAccess ? 'Vous devez d\'abord compléter: ' . $incompletePrerequisites->pluck('title')->join(', ') : null
+        ];
+    }
+
+    /**
+     * Get the next course in the sequence for the same permit category.
+     *
+     * @return \App\Models\Course|null
+     */
+    public function getNextCourse()
+    {
+        return Course::where('school_id', $this->school_id)
+            ->where('permit_category_id', $this->permit_category_id)
+            ->where('sequence_order', '>', $this->sequence_order)
+            ->orderBy('sequence_order')
+            ->first();
+    }
+
+    /**
+     * Get the previous course in the sequence for the same permit category.
+     *
+     * @return \App\Models\Course|null
+     */
+    public function getPreviousCourse()
+    {
+        return Course::where('school_id', $this->school_id)
+            ->where('permit_category_id', $this->permit_category_id)
+            ->where('sequence_order', '<', $this->sequence_order)
+            ->orderBy('sequence_order', 'desc')
+            ->first();
     }
 }

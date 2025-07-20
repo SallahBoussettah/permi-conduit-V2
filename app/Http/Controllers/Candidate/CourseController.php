@@ -59,7 +59,7 @@ class CourseController extends Controller
         
         $courses = $query->orderBy('title')->paginate(9);
         
-        // Get progress for each course
+        // Get progress for each course and check lock status
         foreach ($courses as $course) {
             $totalMaterials = $course->materials->count();
             
@@ -100,6 +100,9 @@ class CourseController extends Controller
             }
             
             $course->materials_count = $totalMaterials;
+            
+            // Add lock status for prerequisites
+            $course->lock_status = $course->getLockStatus($user);
         }
         
         return view('candidate.courses.index', compact('courses', 'permitCategoryInactive', 'userPermitCategory', 'activePermitCategories', 'userPermitCategories'));
@@ -152,6 +155,13 @@ class CourseController extends Controller
                 return redirect()->route('candidate.courses.index')
                     ->with('error', 'This course is currently unavailable because its permit category is inactive.');
             }
+        }
+        
+        // Check prerequisites (lock/unlock mechanism)
+        $lockStatus = $course->getLockStatus($user);
+        if ($lockStatus['is_locked']) {
+            return redirect()->route('candidate.courses.index')
+                ->with('error', $lockStatus['lock_reason']);
         }
         
         $materials = $course->materials()->orderBy('sequence_order')->get();

@@ -42,6 +42,53 @@
             </div>
         @endif
 
+        <!-- Filters Section -->
+        <div class="mb-6 bg-white shadow rounded-lg p-6">
+            <form method="GET" action="{{ route('inspector.courses.index') }}" class="space-y-4 md:space-y-0 md:flex md:items-end md:space-x-4">
+                <!-- Search -->
+                <div class="flex-1">
+                    <label for="search" class="block text-sm font-medium text-gray-700">Rechercher</label>
+                    <input type="text" name="search" id="search" value="{{ $search }}" 
+                           placeholder="Titre, description ou section d'examen..."
+                           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
+                </div>
+
+                <!-- Permit Category Filter -->
+                <div class="min-w-0 flex-1">
+                    <label for="permit_category" class="block text-sm font-medium text-gray-700">Catégorie de permis</label>
+                    <select name="permit_category" id="permit_category" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
+                        <option value="">Toutes les catégories</option>
+                        <option value="null" {{ $selectedPermitCategory === 'null' ? 'selected' : '' }}>Sans catégorie</option>
+                        @foreach($permitCategories as $category)
+                            <option value="{{ $category->id }}" {{ $selectedPermitCategory == $category->id ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Course Type Filter -->
+                <div class="min-w-0 flex-1">
+                    <label for="course_type" class="block text-sm font-medium text-gray-700">Type de cours</label>
+                    <select name="course_type" id="course_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
+                        <option value="">Tous les types</option>
+                        <option value="auto_seeded" {{ $courseType === 'auto_seeded' ? 'selected' : '' }}>Cours standards</option>
+                        <option value="custom" {{ $courseType === 'custom' ? 'selected' : '' }}>Cours personnalisés</option>
+                    </select>
+                </div>
+
+                <!-- Filter Buttons -->
+                <div class="flex space-x-2">
+                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                        Filtrer
+                    </button>
+                    <a href="{{ route('inspector.courses.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                        Réinitialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+
         <!-- Courses List -->
         @if(count($courses) > 0)
             <div class="bg-white shadow overflow-hidden sm:rounded-md">
@@ -60,29 +107,48 @@
                                             <div class="text-lg font-medium text-gray-900">
                                                 {{ $course->title }}
                                             </div>
-                                            <div class="flex items-center mt-1">
-                                                @if($course->examSection)
+                                            <div class="flex items-center mt-1 flex-wrap gap-2">
+                                                <!-- Course Type Badge -->
+                                                @if($course->is_auto_seeded)
+                                                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                                        Cours Standard
+                                                    </span>
+                                                    @if($course->exam_section)
+                                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                                                            {{ $course->exam_section }} ({{ $course->sequence_order }})
+                                                        </span>
+                                                    @endif
+                                                @else
+                                                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
+                                                        Cours Personnalisé
+                                                    </span>
+                                                @endif
+
+                                                <!-- Permit Category -->
+                                                @if($course->permitCategory)
                                                     <span class="px-2 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-800">
-                                                        {{ $course->examSection->name }}
+                                                        {{ $course->permitCategory->name }}
                                                     </span>
                                                 @else
                                                     <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
-                                                        {{ __('Aucune catégorie') }}
+                                                        Sans catégorie
                                                     </span>
                                                 @endif
                                                 
-                                                <span class="ml-3 flex items-center text-sm text-gray-500">
+                                                <!-- Materials Count -->
+                                                <span class="flex items-center text-sm text-gray-500">
                                                     <svg class="flex-shrink-0 mr-1 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                     </svg>
-                                                    {{ $course->materials->count() }} {{ __('Materials') }}
+                                                    {{ $course->materials->count() }} matériaux
                                                 </span>
                                                 
-                                                <span class="ml-3 flex items-center text-sm text-gray-500">
+                                                <!-- Creation Date -->
+                                                <span class="flex items-center text-sm text-gray-500">
                                                     <svg class="flex-shrink-0 mr-1 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                                     </svg>
-                                                    {{ $course->created_at->format('M d, Y') }}
+                                                    {{ $course->created_at->format('d/m/Y') }}
                                                 </span>
                                             </div>
                                         </div>
