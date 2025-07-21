@@ -85,268 +85,405 @@
 
             <!-- Dashboard Content -->
             @if(Auth::user()->role)
-                @if(Auth::user()->role->name === 'super_admin')
-                    <!-- Super Admin Redirect -->
-                    <script>
-                        window.location.href = "{{ route('super_admin.dashboard') }}";
-                    </script>
-                    <div class="p-8 text-center">
-                        <p>{{ __('Redirection vers le tableau de bord de l\'administrateur...') }}</p>
-                        <p class="mt-4">
-                            <a href="{{ route('super_admin.dashboard') }}"
-                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                {{ __('Cliquez ici si vous n\'êtes pas redirigé') }}
-                            </a>
-                        </p>
-                    </div>
-                @elseif(Auth::user()->role->name === 'admin')
-                    <!-- Admin Dashboard -->
-                    <div class="space-y-8">
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ __('Administration') }}</h2>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div
-                                    class="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
-                                    <a href="{{ route('admin.users.index') }}" class="block">
-                                        <div class="p-6">
-                                            <div class="flex items-center">
-                                                <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
-                                                    <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                        viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                                    </svg>
-                                                </div>
-                                                <div class="ml-5">
-                                                    <h3 class="text-lg font-medium text-gray-900">
-                                                        {{ __('Gestion des utilisateurs') }}
-                                                    </h3>
-                                                    <p class="mt-1 text-sm text-gray-500">
-                                                        {{ __('Gérer tous les utilisateurs du système.') }}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div class="mt-6">
-                                                <a href="{{ route('admin.users.index') }}"
-                                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                                    {{ __('Gérer les utilisateurs') }}
-                                                </a>
-                                            </div>
-                                        </div>
+                        @if(Auth::user()->role->name === 'super_admin')
+                            <!-- Super Admin Redirect -->
+                            <script>
+                                window.location.href = "{{ route('super_admin.dashboard') }}";
+                            </script>
+                            <div class="p-8 text-center">
+                                <p>{{ __('Redirection vers le tableau de bord de l\'administrateur...') }}</p>
+                                <p class="mt-4">
+                                    <a href="{{ route('super_admin.dashboard') }}"
+                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                        {{ __('Cliquez ici si vous n\'êtes pas redirigé') }}
                                     </a>
-                                </div>
+                                </p>
+                            </div>
+                        @elseif(Auth::user()->role->name === 'admin')
+                                    <!-- Admin Dashboard -->
+                                    <div class="space-y-8">
+                                        <!-- Statistics Overview -->
+                                        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                                            <div class="p-6">
+                                                <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ __('Tableau de bord d\'administration') }}</h2>
+                                                <p class="text-gray-600 mb-6">
+                                                    {{ __('Bienvenue dans votre espace d\'administration. Voici un aperçu des statistiques.') }}
+                                                </p>
 
-                                <!-- Permit Categories Card -->
-                                <div
-                                    class="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
-                                    <a href="{{ route('admin.permit-categories.index') }}" class="block">
-                                        <div class="p-6">
-                                            <div class="flex items-center">
-                                                <div class="flex-shrink-0 bg-purple-500 rounded-md p-3">
-                                                    <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                        viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                                                    </svg>
+                                                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                                    <!-- Total Users -->
+                                                    <div class="bg-white rounded-lg p-4 border border-blue-500">
+                                                        <div class="flex justify-between items-center">
+                                                            <div>
+                                                                <p class="text-blue-700 font-semibold">{{ __('Utilisateurs') }}</p>
+                                                                <h3 class="text-3xl font-bold mt-1 text-blue-700">
+                                                                    {{ \App\Models\User::count() }}
+                                                                </h3>
+                                                            </div>
+                                                            <div class="bg-blue-100 rounded-full p-3">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-700" fill="none"
+                                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                                                </svg>
+                                                            </div>
+                                                        </div>
+                                                        <div class="mt-4">
+                                                            <a href="{{ route('admin.users.index') }}"
+                                                                class="text-xs text-blue-700 font-medium flex items-center">
+                                                                {{ __('Voir tous les utilisateurs') }}
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none"
+                                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                        d="M9 5l7 7-7 7" />
+                                                                </svg>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Inspectors -->
+                                                    <div class="bg-white rounded-lg p-4 border border-yellow-500">
+                                                        <div class="flex justify-between items-center">
+                                                            <div>
+                                                                <p class="text-yellow-700 font-semibold">{{ __('Inspecteurs') }}</p>
+                                                                <h3 class="text-3xl font-bold mt-1 text-yellow-700">
+                                                                    {{ \App\Models\User::whereHas('role', function ($q) {
+                                        $q->where('name', 'inspector'); })->count() }}
+                                                                </h3>
+                                                            </div>
+                                                            <div class="bg-yellow-100 rounded-full p-3">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-700" fill="none"
+                                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                                                </svg>
+                                                            </div>
+                                                        </div>
+                                                        <div class="mt-4">
+                                                            <a href="{{ route('admin.inspectors') }}"
+                                                                class="text-xs text-yellow-700 font-medium flex items-center">
+                                                                {{ __('Gérer les inspecteurs') }}
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none"
+                                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                        d="M9 5l7 7-7 7" />
+                                                                </svg>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Candidates -->
+                                                    <div class="bg-white rounded-lg p-4 border border-green-500">
+                                                        <div class="flex justify-between items-center">
+                                                            <div>
+                                                                <p class="text-green-700 font-semibold">{{ __('Candidats') }}</p>
+                                                                <h3 class="text-3xl font-bold mt-1 text-green-700">
+                                                                    {{ \App\Models\User::whereHas('role', function ($q) {
+                                        $q->where('name', 'candidate'); })->count() }}
+                                                                </h3>
+                                                            </div>
+                                                            <div class="bg-green-100 rounded-full p-3">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-700" fill="none"
+                                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                                </svg>
+                                                            </div>
+                                                        </div>
+                                                        <div class="mt-4">
+                                                            <a href="{{ route('admin.users.index') }}?role=candidate"
+                                                                class="text-xs text-green-700 font-medium flex items-center">
+                                                                {{ __('Voir les candidats') }}
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none"
+                                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                        d="M9 5l7 7-7 7" />
+                                                                </svg>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- QCM Exams -->
+                                                    <div class="bg-white rounded-lg p-4 border border-purple-500">
+                                                        <div class="flex justify-between items-center">
+                                                            <div>
+                                                                <p class="text-purple-700 font-semibold">{{ __('Examens QCM') }}</p>
+                                                                <h3 class="text-3xl font-bold mt-1 text-purple-700">
+                                                                    {{ \App\Models\QcmExam::count() }}
+                                                                </h3>
+                                                            </div>
+                                                            <div class="bg-purple-100 rounded-full p-3">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-700" fill="none"
+                                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                                                </svg>
+                                                            </div>
+                                                        </div>
+                                                        <div class="mt-4">
+                                                            <a href="{{ route('admin.qcm-reports.index') }}"
+                                                                class="text-xs text-purple-700 font-medium flex items-center">
+                                                                {{ __('Voir les rapports') }}
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none"
+                                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                        d="M9 5l7 7-7 7" />
+                                                                </svg>
+                                                            </a>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div class="ml-5">
-                                                    <h3 class="text-lg font-medium text-gray-900">{{ __('Catégories de permis') }}
-                                                    </h3>
-                                                    <p class="mt-1 text-sm text-gray-500">
-                                                        {{ __('Gérer les catégories de permis de conduire (C, CE, D, etc.).') }}
-                                                    </p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Quick Actions -->
+                                        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                                            <div class="p-6">
+                                                <div class="flex justify-between items-center mb-6">
+                                                    <h2 class="text-xl font-bold text-gray-900">{{ __('Actions rapides') }}</h2>
+                                                    <div class="flex space-x-2">
+                                                        <a href="{{ route('admin.register.inspector') }}"
+                                                            class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
+                                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                    d="M12 4v16m8-8H4" />
+                                                            </svg>
+                                                            {{ __('Nouvel inspecteur') }}
+                                                        </a>
+                                                        <a href="{{ route('admin.permit-categories.create') }}"
+                                                            class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
+                                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                    d="M12 4v16m8-8H4" />
+                                                            </svg>
+                                                            {{ __('Nouvelle catégorie') }}
+                                                        </a>
+                                                    </div>
+                                                </div>
+
+                                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                                    <a href="{{ route('admin.users.index') }}"
+                                                        class="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                                        <div class="flex-shrink-0 bg-blue-100 rounded-full p-2">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-700" fill="none"
+                                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                                            </svg>
+                                                        </div>
+                                                        <div class="ml-3">
+                                                            <h3 class="text-sm font-medium text-gray-900">{{ __('Gérer les utilisateurs') }}</h3>
+                                                        </div>
+                                                    </a>
+
+                                                    <a href="{{ route('admin.permit-categories.index') }}"
+                                                        class="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                                        <div class="flex-shrink-0 bg-purple-100 rounded-full p-2">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-700" fill="none"
+                                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                                            </svg>
+                                                        </div>
+                                                        <div class="ml-3">
+                                                            <h3 class="text-sm font-medium text-gray-900">{{ __('Catégories de permis') }}</h3>
+                                                        </div>
+                                                    </a>
+
+                                                    <a href="{{ route('admin.inspectors') }}"
+                                                        class="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                                        <div class="flex-shrink-0 bg-yellow-100 rounded-full p-2">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-700" fill="none"
+                                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                                            </svg>
+                                                        </div>
+                                                        <div class="ml-3">
+                                                            <h3 class="text-sm font-medium text-gray-900">{{ __('Gérer les inspecteurs') }}</h3>
+                                                        </div>
+                                                    </a>
+
+                                                    <a href="{{ route('admin.qcm-reports.index') }}"
+                                                        class="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                                        <div class="flex-shrink-0 bg-green-100 rounded-full p-2">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-700" fill="none"
+                                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                            </svg>
+                                                        </div>
+                                                        <div class="ml-3">
+                                                            <h3 class="text-sm font-medium text-gray-900">{{ __('Rapports QCM') }}</h3>
+                                                        </div>
+                                                    </a>
                                                 </div>
                                             </div>
-                                            <div class="mt-6">
-                                                <a href="{{ route('admin.permit-categories.index') }}"
-                                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
-                                                    {{ __('Gérer les catégories de permis') }}
-                                                </a>
-                                            </div>
                                         </div>
-                                    </a>
-                                </div>
 
-                                <div
-                                    class="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
-                                    <div class="p-6">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 bg-yellow-500 rounded-md p-3">
-                                                <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                                                </svg>
-                                            </div>
-                                            <div class="ml-5">
-                                                <h3 class="text-lg font-medium text-gray-900">{{ __('Gestion des inspecteurs') }}
-                                                </h3>
-                                                <p class="mt-1 text-sm text-gray-500">
-                                                    {{ __('Créer et gérer les comptes d\'inspecteurs.') }}
-                                                </p>
+                                        <!-- Module QCM Section -->
+                                        <div class="mt-16">
+                                            <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ __('Module QCM') }}</h2>
+
+                                            <!-- QCM Cards -->
+                                            <div class="bg-white rounded-xl shadow-lg p-6">
+                                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                    <!-- Rapports QCM Card -->
+                                                    <div class="bg-gray-50 rounded-lg p-4">
+                                                        <div class="flex items-start">
+                                                            <div class="flex-shrink-0 bg-green-100 rounded-full p-3">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none"
+                                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                </svg>
+                                                            </div>
+                                                            <div class="ml-4">
+                                                                <h3 class="text-lg font-medium text-gray-900">{{ __('Rapports QCM') }}</h3>
+                                                                <div class="min-h-[48px]">
+                                                                    <p class="mt-2 text-sm text-gray-500">
+                                                                        {{ __('Voir les résultats des examens des candidats et les statistiques.') }}
+                                                                    </p>
+                                                                </div>
+                                                                <div class="mt-4">
+                                                                    <a href="{{ route('admin.qcm-reports.index') }}"
+                                                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                                                        {{ __('Voir les rapports') }}
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Performance des candidats Card -->
+                                                    <div class="bg-gray-50 rounded-lg p-4">
+                                                        <div class="flex items-start">
+                                                            <div class="flex-shrink-0 bg-indigo-100 rounded-full p-3">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none"
+                                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                                </svg>
+                                                            </div>
+                                                            <div class="ml-4">
+                                                                <h3 class="text-lg font-medium text-gray-900">{{ __('Performance des candidats') }}
+                                                                </h3>
+                                                                <div class="min-h-[48px]">
+                                                                    <p class="mt-2 text-sm text-gray-500">
+                                                                        {{ __('Voir l\'historique des examens des candidats.') }}
+                                                                    </p>
+                                                                    <p class="mt-1 text-sm text-gray-500 opacity-0">
+                                                                        &nbsp;
+                                                                    </p>
+                                                                </div>
+                                                                <div class="mt-4">
+                                                                    <a href="{{ route('admin.qcm-reports.candidates') }}"
+                                                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                                                        {{ __('Voir les candidats') }}
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Export des données Card -->
+                                                    <div class="bg-gray-50 rounded-lg p-4">
+                                                        <div class="flex items-start">
+                                                            <div class="flex-shrink-0 bg-red-100 rounded-full p-3">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none"
+                                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                </svg>
+                                                            </div>
+                                                            <div class="ml-4">
+                                                                <h3 class="text-lg font-medium text-gray-900">{{ __('Export des données') }}</h3>
+                                                                <div class="min-h-[48px]">
+                                                                    <p class="mt-2 text-sm text-gray-500">
+                                                                        {{ __('Exporter les résultats des examens QCM pour la création de rapports.') }}
+                                                                    </p>
+                                                                </div>
+                                                                <div class="mt-4">
+                                                                    <a href="{{ route('admin.qcm-reports.export') }}"
+                                                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                                                        {{ __('Exporter les rapports') }}
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="mt-6">
-                                            <a href="{{ route('admin.inspectors') }}"
-                                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
-                                                {{ __('Gérer les inspecteurs') }}
-                                            </a>
+
+                                        <!-- Support Client Section -->
+                                        <div class="bg-white rounded-xl shadow-lg overflow-hidden mt-8">
+                                            <div class="p-6">
+                                                <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ __('Support Client') }}</h2>
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                    <!-- FAQ Chat IA Card -->
+                                                    <div class="bg-gray-50 rounded-lg p-4">
+                                                        <div class="flex items-start">
+                                                            <div class="flex-shrink-0 bg-blue-100 rounded-full p-3">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none"
+                                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                        d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                                                </svg>
+                                                            </div>
+                                                            <div class="ml-4">
+                                                                <h3 class="text-lg font-medium text-gray-900">{{ __('FAQ Chat IA') }}</h3>
+                                                                <div class="min-h-[48px]">
+                                                                    <p class="mt-2 text-sm text-gray-500">
+                                                                        {{ __('Gérer les questions fréquentes pour le chat IA.') }}
+                                                                    </p>
+                                                                </div>
+                                                                <div class="mt-4">
+                                                                    <a href="{{ route('admin.ai-chat-faqs.index') }}"
+                                                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                                        {{ __('Gérer les FAQ') }}
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Conversations Card -->
+                                                    <div class="bg-gray-50 rounded-lg p-4">
+                                                        <div class="flex items-start">
+                                                            <div class="flex-shrink-0 bg-purple-100 rounded-full p-3">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none"
+                                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                        d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                                                                </svg>
+                                                            </div>
+                                                            <div class="ml-4">
+                                                                <h3 class="text-lg font-medium text-gray-900">{{ __('Conversations') }}</h3>
+                                                                <div class="min-h-[48px]">
+                                                                    <p class="mt-2 text-sm text-gray-500">
+                                                                        {{ __('Voir toutes les conversations des candidats avec le support.') }}
+                                                                    </p>
+                                                                </div>
+                                                                <div class="mt-4">
+                                                                    <a href="{{ route('admin.chat-conversations.index') }}"
+                                                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                                                                        {{ __('Voir les conversations') }}
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- QCM Reports Section -->
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ __('Module QCM') }}</h2>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div
-                                    class="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
-                                    <div class="p-6">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
-                                                <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                            </div>
-                                            <div class="ml-5">
-                                                <h3 class="text-lg font-medium text-gray-900">{{ __('Rapports QCM') }}</h3>
-                                                <p class="mt-1 text-sm text-gray-500">
-                                                    {{ __('Voir les résultats des examens des candidats et les statistiques.') }}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div class="mt-6">
-                                            <a href="{{ route('admin.qcm-reports.index') }}"
-                                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                                {{ __('Voir les rapports') }}
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div
-                                    class="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
-                                    <div class="p-6">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 bg-indigo-500 rounded-md p-3">
-                                                <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                                </svg>
-                                            </div>
-                                            <div class="ml-5">
-                                                <h3 class="text-lg font-medium text-gray-900">{{ __('Performance des candidats') }}
-                                                </h3>
-                                                <p class="mt-1 text-sm text-gray-500">
-                                                    {{ __('Voir l\'historique des examens des candidats.') }}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div class="mt-6">
-                                            <a href="{{ route('admin.qcm-reports.candidates') }}"
-                                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                                {{ __('Voir les candidats') }}
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div
-                                    class="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
-                                    <div class="p-6">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 bg-red-500 rounded-md p-3">
-                                                <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                            </div>
-                                            <div class="ml-5">
-                                                <h3 class="text-lg font-medium text-gray-900">{{ __('Export des données') }}</h3>
-                                                <p class="mt-1 text-sm text-gray-500">
-                                                    {{ __('Exporter les résultats des examens QCM pour la création de rapports.') }}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div class="mt-6">
-                                            <a href="{{ route('admin.qcm-reports.export') }}"
-                                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                                {{ __('Exporter les rapports') }}
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Chat Support Section -->
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ __('Support Client') }}</h2>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div
-                                    class="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
-                                    <div class="p-6">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
-                                                <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                                                </svg>
-                                            </div>
-                                            <div class="ml-5">
-                                                <h3 class="text-lg font-medium text-gray-900">{{ __('FAQ Chat IA') }}</h3>
-                                                <p class="mt-1 text-sm text-gray-500">
-                                                    {{ __('Gérer les questions fréquentes pour le chat IA.') }}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div class="mt-6">
-                                            <a href="{{ route('admin.ai-chat-faqs.index') }}"
-                                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                                {{ __('Gérer les FAQ') }}
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div
-                                    class="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
-                                    <div class="p-6">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 bg-purple-500 rounded-md p-3">
-                                                <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-                                                </svg>
-                                            </div>
-                                            <div class="ml-5">
-                                                <h3 class="text-lg font-medium text-gray-900">{{ __('Conversations') }}</h3>
-                                                <p class="mt-1 text-sm text-gray-500">
-                                                    {{ __('Voir toutes les conversations des candidats avec le support.') }}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div class="mt-6">
-                                            <a href="{{ route('admin.chat-conversations.index') }}"
-                                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
-                                                {{ __('Voir les conversations') }}
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                @elseif(Auth::user()->role->name === 'inspector')
+                        @elseif(Auth::user()->role->name === 'inspector')
                     <!-- Inspector Dashboard -->
                     <div class="space-y-8">
                         <!-- Statistics Overview -->
@@ -379,8 +516,8 @@
                                             <a href="{{ route('inspector.courses.index') }}"
                                                 class="text-xs text-indigo-900 font-medium flex items-center">
                                                 {{ __('Voir tous les cours') }}
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M9 5l7 7-7 7" />
                                                 </svg>
@@ -409,8 +546,8 @@
                                             <a href="{{ route('inspector.qcm-papers.index') }}"
                                                 class="text-xs text-yellow-900 font-medium flex items-center">
                                                 {{ __('Voir tous les QCM') }}
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M9 5l7 7-7 7" />
                                                 </svg>
@@ -425,7 +562,7 @@
                                                 <p class="text-green-700 font-semibold">{{ __('Candidats actifs') }}</p>
                                                 <h3 class="text-3xl font-bold mt-1 text-green-700">
                                                     {{ \App\Models\User::whereHas('role', function ($q) {
-                        $q->where('name', 'candidate'); })->where('is_active', true)->count() }}
+                                $q->where('name', 'candidate'); })->where('is_active', true)->count() }}
                                                 </h3>
                                             </div>
                                             <div class="bg-white bg-opacity-30 rounded-full p-3">
@@ -439,8 +576,8 @@
                                         <div class="mt-4">
                                             <a href="#" class="text-xs text-green-900 font-medium flex items-center">
                                                 {{ __('Voir les statistiques') }}
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M9 5l7 7-7 7" />
                                                 </svg>
@@ -469,8 +606,8 @@
                                             <a href="{{ route('inspector.chat.index') }}"
                                                 class="text-xs text-blue-900 font-medium flex items-center">
                                                 {{ __('Voir les messages') }}
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M9 5l7 7-7 7" />
                                                 </svg>
@@ -489,19 +626,17 @@
                                     <div class="flex space-x-2">
                                         <a href="{{ route('inspector.courses.create') }}"
                                             class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 4v16m8-8H4" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                             </svg>
                                             {{ __('Nouveau cours') }}
                                         </a>
                                         <a href="{{ route('inspector.qcm-papers.create') }}"
                                             class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 4v16m8-8H4" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                             </svg>
                                             {{ __('Nouveau QCM') }}
                                         </a>
@@ -616,8 +751,7 @@
 
                                                 @if(\App\Models\Course::where('created_by', Auth::id())->count() == 0)
                                                     <tr>
-                                                        <td colspan="3"
-                                                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                                        <td colspan="3" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                                             {{ __('Aucun cours créé pour le moment.') }}
                                                         </td>
                                                     </tr>
@@ -763,8 +897,7 @@
                             <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ __('Aperçu de votre progression') }}</h2>
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 <!-- Course Progress -->
-                                <div
-                                    class="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
+                                <div class="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
                                     <div class="p-6">
                                         <div class="flex items-center">
                                             <div class="flex-shrink-0 bg-purple-500 rounded-full p-3">
@@ -785,8 +918,7 @@
                                 </div>
 
                                 <!-- QCM Exams Taken -->
-                                <div
-                                    class="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
+                                <div class="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
                                     <div class="p-6">
                                         <div class="flex items-center">
                                             <div class="flex-shrink-0 bg-yellow-500 rounded-full p-3">
@@ -807,8 +939,7 @@
                                 </div>
 
                                 <!-- QCM Success Rate -->
-                                <div
-                                    class="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
+                                <div class="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
                                     <div class="p-6">
                                         <div class="flex items-center">
                                             <div class="flex-shrink-0 bg-green-500 rounded-full p-3">
@@ -834,8 +965,7 @@
                                 </div>
 
                                 <!-- Permit Categories -->
-                                <div
-                                    class="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
+                                <div class="bg-white overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
                                     <div class="p-6">
                                         <div class="flex items-center">
                                             <div class="flex-shrink-0 bg-blue-500 rounded-full p-3">
@@ -1134,6 +1264,6 @@
                     </div>
                 @endif
             @endif
-        </div>
+    </div>
     </div>
 @endsection
