@@ -86,6 +86,9 @@ class QcmExamController extends Controller
         // Filter by permit category if requested
         $permitCategoryFilter = request('permit_category');
         
+        // Check if we're in random challenge mode
+        $randomChallenge = request('random_challenge', false);
+        
         $query = QcmPaper::whereIn('permit_category_id', $permitCategoryIds)
             ->where('status', true)
             ->where(function($query) use ($user) {
@@ -98,27 +101,37 @@ class QcmExamController extends Controller
             $query->where('permit_category_id', $permitCategoryFilter);
         }
         
-        // Instead of paginating all results, randomly select a single paper
-        // First check if there are any available papers
-        $paperCount = $query->count();
-        
-        if ($paperCount > 0) {
-            // Get a random paper with all necessary relationships
-            $randomOffset = rand(0, $paperCount - 1);
-            $availableExams = $query->with(['questions', 'permitCategory'])
-                                    ->skip($randomOffset)
-                                    ->take(1)
-                                    ->get();
+        // If random challenge mode is enabled, select a random exam
+        if ($randomChallenge) {
+            $paperCount = $query->count();
             
-            // Log the random selection
-            \Log::info("Randomly selected 1 exam paper from {$paperCount} available papers for user {$user->id}");
-        } else {
-            // No papers available
-            $availableExams = collect();
-            \Log::info("No exam papers available for user {$user->id}");
+            if ($paperCount > 0) {
+                // Get a random paper with all necessary relationships
+                $randomOffset = rand(0, $paperCount - 1);
+                $availableExams = $query->with(['questions', 'permitCategory'])
+                                        ->skip($randomOffset)
+                                        ->take(1)
+                                        ->get();
+                
+                // Log the random selection
+                \Log::info("Randomly selected 1 exam paper from {$paperCount} available papers for user {$user->id}");
+            } else {
+                // No papers available
+                $availableExams = collect();
+                \Log::info("No exam papers available for user {$user->id}");
+            }
+            
+            return view('candidate.qcm-exams.available', compact('availableExams', 'permitCategories', 'randomChallenge'));
         }
         
-        return view('candidate.qcm-exams.available', compact('availableExams', 'permitCategories'));
+        // For normal mode, get all available exams with pagination
+        $availableExams = $query->with(['questions', 'permitCategory'])
+                               ->orderBy('title')
+                               ->paginate(10);
+        
+        \Log::info("Loaded {$availableExams->count()} available exam papers for user {$user->id}");
+        
+        return view('candidate.qcm-exams.available', compact('availableExams', 'permitCategories', 'randomChallenge'));
     }
     
     /**

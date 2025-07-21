@@ -5,8 +5,8 @@
     <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">{{ __('My QCM Exams') }}</h1>
-            <p class="mt-2 text-sm text-gray-700">{{ __('View and take QCM exams for your permit categories.') }}</p>
+            <h1 class="text-3xl font-bold text-gray-900">{{ __('Mes examens QCM') }}</h1>
+            <p class="mt-2 text-sm text-gray-700">{{ __('Consultez et passez des examens QCM pour vos catégories de permis.') }}</p>
         </div>
 
         @if(session('success'))
@@ -43,15 +43,23 @@
         <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
             <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
                 <div>
-                    <h3 class="text-lg leading-6 font-medium text-gray-900">{{ __('Available Exam') }}</h3>
-                    <p class="mt-1 max-w-2xl text-sm text-gray-500">{{ __('A randomly selected QCM exam for your permit category.') }}</p>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">{{ __('Examen disponible') }}</h3>
+                    <p class="mt-1 max-w-2xl text-sm text-gray-500">{{ __('Un examen QCM sélectionné aléatoirement pour votre catégorie de permis.') }}</p>
                 </div>
-                <a href="{{ route('candidate.qcm-exams.available') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    <svg class="mr-2 -ml-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
-                    </svg>
-                    {{ __('Get Another Exam') }}
-                </a>
+                <div class="flex space-x-3">
+                    <a href="{{ route('candidate.qcm-exams.available', ['show_all' => true]) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg class="mr-2 -ml-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+                        </svg>
+                        {{ __('Voir tous les examens') }}
+                    </a>
+                    <a href="{{ route('candidate.qcm-exams.available', ['random_challenge' => true]) }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg class="mr-2 -ml-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                        </svg>
+                        {{ __('Mode Challenge') }}
+                    </a>
+                </div>
             </div>
             <div class="border-t border-gray-200">
                 @if(isset($availableExams) && count($availableExams) > 0)
@@ -76,7 +84,7 @@
                                                 @csrf
                                                 <input type="hidden" name="paper_id" value="{{ $paper->id }}">
                                                 <button type="submit" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                                    {{ __('Start Exam') }}
+                                                    {{ __('Commencer l\'examen') }}
                                                 </button>
                                             </form>
                                         </div>
@@ -93,7 +101,7 @@
                                                 <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
                                                 </svg>
-                                                {{ __('Time Limit:') }} {{ $paper->duration }} {{ __('minutes') }}
+                                                {{ __('Temps limite:') }} {{ $paper->duration }} {{ __('minutes') }}
                                             </p>
                                         </div>
                                         <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
@@ -101,7 +109,7 @@
                                                 <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
                                                 <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                                             </svg>
-                                            {{ __('Passing Score:') }} {{ config('qcm.passing_percentage', 60) }}%
+                                            {{ __('Note minimale:') }} {{ config('qcm.passing_percentage', 60) }}%
                                         </div>
                                     </div>
                                 </div>
@@ -113,8 +121,8 @@
                         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
                         </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">{{ __('No available exams') }}</h3>
-                        <p class="mt-1 text-sm text-gray-500">{{ __('There are no QCM exams available for your permit categories.') }}</p>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">{{ __('Aucun examen disponible') }}</h3>
+                        <p class="mt-1 text-sm text-gray-500">{{ __('Il n\'y a pas d\'examen QCM disponible pour vos catégories de permis.') }}</p>
                     </div>
                 @endif
             </div>
@@ -124,8 +132,8 @@
         <div class="bg-white shadow overflow-hidden sm:rounded-lg">
             <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
                 <div>
-                    <h3 class="text-lg leading-6 font-medium text-gray-900">{{ __('My Recent Exams') }}</h3>
-                    <p class="mt-1 max-w-2xl text-sm text-gray-500">{{ __('Your recently completed QCM exams.') }}</p>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">{{ __('Mes examens récents') }}</h3>
+                    <p class="mt-1 max-w-2xl text-sm text-gray-500">{{ __('Vos examens QCM récemment complétés.') }}</p>
                 </div>
             </div>
             <div class="border-t border-gray-200">
@@ -134,10 +142,10 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Exam') }}</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Examen') }}</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Date') }}</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Score') }}</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Status') }}</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Statut') }}</th>
                                     <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
