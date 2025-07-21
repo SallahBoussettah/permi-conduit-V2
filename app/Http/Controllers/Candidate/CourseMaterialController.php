@@ -188,32 +188,57 @@ class CourseMaterialController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\Course  $course
      * @param  \App\Models\CourseMaterial  $material
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
      */
     public function markAsComplete(Request $request, Course $course, CourseMaterial $material)
     {
-        $user = Auth::user();
-        
-        // Set appropriate last_page based on material type
-        $lastPage = ($material->material_type === 'pdf') ? ($material->page_count ?? 1) : 1;
-        
-        // Mark as complete
-        $progress = UserCourseProgress::updateOrCreate(
-            [
-                'user_id' => $user->id,
-                'course_material_id' => $material->id,
-            ],
-            [
-                'last_page' => $lastPage,
-                'progress_percentage' => 100,
-                'completed' => true,
-            ]
-        );
-        
-        // Update course completion record
-        $this->updateCourseCompletion($user, $course);
-        
-        return redirect()->back()->with('success', 'Material marked as complete!');
+        try {
+            $user = Auth::user();
+            
+            // Set appropriate last_page based on material type
+            $lastPage = ($material->material_type === 'pdf') ? ($material->page_count ?? 1) : 1;
+            
+            // Mark as complete
+            $progress = UserCourseProgress::updateOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'course_material_id' => $material->id,
+                ],
+                [
+                    'last_page' => $lastPage,
+                    'progress_percentage' => 100,
+                    'completed' => true,
+                ]
+            );
+            
+            // Update course completion record
+            $this->updateCourseCompletion($user, $course);
+            
+            // If it's an AJAX request, return JSON
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Material marked as complete!'
+                ]);
+            }
+            
+            // Otherwise, redirect with success message
+            return redirect()->route('candidate.courses.show', $course)->with('success', 'Material marked as complete!');
+        } catch (\Exception $e) {
+            // Log the error
+            \Log::error('Error marking material as complete: ' . $e->getMessage());
+            
+            // If it's an AJAX request, return JSON error
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error marking material as complete. Please try again.'
+                ], 500);
+            }
+            
+            // Otherwise, redirect with error message
+            return redirect()->back()->with('error', 'Error marking material as complete. Please try again.');
+        }
     }
     
     /**

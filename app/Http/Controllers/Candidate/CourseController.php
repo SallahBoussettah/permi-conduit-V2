@@ -57,7 +57,7 @@ class CourseController extends Controller
             $this->applyDefaultCategoryFilter($query, $hasActivePermitCategories, $activePermitCategories);
         }
         
-        $courses = $query->orderBy('title')->paginate(9);
+        $courses = $query->orderBy('sequence_order')->orderBy('title')->paginate(9);
         
         // Get progress for each course and check lock status
         foreach ($courses as $course) {

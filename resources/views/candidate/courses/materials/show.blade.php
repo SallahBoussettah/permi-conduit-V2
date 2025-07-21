@@ -284,39 +284,8 @@
             completeButton.disabled = true;
             completeButton.innerText = '{{ __("Marking as Complete...") }}';
             
-            // Get the form data and CSRF token
-            const token = document.querySelector('input[name="_token"]').value;
-            const formAction = completeForm.getAttribute('action');
-            
-            // Submit via AJAX
-            fetch(formAction, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRF-TOKEN': token,
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: '_token=' + encodeURIComponent(token),
-                credentials: 'same-origin'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Redirect to the course page on success
-                    window.location.href = '{{ route("candidate.courses.show", $course) }}';
-                } else {
-                    // If there was an error, re-enable the button
-                    completeButton.disabled = false;
-                    completeButton.innerText = '{{ __("Mark as Complete") }}';
-                    alert('{{ __("Error marking material as complete. Please try again.") }}');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                completeButton.disabled = false;
-                completeButton.innerText = '{{ __("Mark as Complete") }}';
-                alert('{{ __("Error marking material as complete. Please try again.") }}');
-            });
+            // Use the form submission instead of AJAX
+            completeForm.submit();
         });
         });
     </script>

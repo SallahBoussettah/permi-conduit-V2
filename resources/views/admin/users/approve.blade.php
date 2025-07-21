@@ -78,7 +78,7 @@
                                 </div>
                                 <div class="ml-7 mt-2">
                                     <div class="flex items-center">
-                                        <input type="number" id="expires_after" name="expires_after" min="1" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="{{ __('Number of days') }}">
+                                        <input type="text" inputmode="numeric" pattern="[0-9]*" id="expires_after" name="expires_after" min="1" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="{{ __('Number of days') }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                                     </div>
                                 </div>
                             </div>
@@ -137,6 +137,29 @@
             dateContainer.classList.toggle('opacity-50', !dateExpirationRadio.checked);
             expirationDateInput.disabled = !dateExpirationRadio.checked;
         }
+        
+        // Ensure expires_after only contains numbers
+        expiresAfterInput.addEventListener('input', function(e) {
+            // Remove any non-numeric characters
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+        
+        // Form submission validation
+        const form = expiresAfterInput.closest('form');
+        form.addEventListener('submit', function(e) {
+            if (daysExpirationRadio.checked) {
+                // Ensure we have a valid number
+                const value = expiresAfterInput.value.trim();
+                if (!value || isNaN(parseInt(value)) || parseInt(value) <= 0) {
+                    e.preventDefault();
+                    alert('Please enter a valid number of days');
+                    expiresAfterInput.focus();
+                    return false;
+                }
+                // Clean the input one more time before submission
+                expiresAfterInput.value = expiresAfterInput.value.replace(/[^0-9]/g, '');
+            }
+        });
         
         // Initial state
         updateInputStates();

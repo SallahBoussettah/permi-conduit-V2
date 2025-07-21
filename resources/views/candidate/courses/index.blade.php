@@ -161,7 +161,7 @@
                         $isLocked = isset($course->lock_status) && $course->lock_status['is_locked'];
                         $lockReason = isset($course->lock_status) ? $course->lock_status['lock_reason'] : null;
                     @endphp
-                    <div class="bg-white rounded-lg shadow overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-yellow-300 hover:border border border-gray-200 {{ $isLocked ? 'opacity-75' : '' }}">
+                    <div class="bg-white rounded-lg shadow overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-yellow-300 hover:border border border-gray-200 {{ $isLocked ? 'opacity-85' : '' }} relative">
                         <!-- Course Thumbnail -->
                         <div class="relative h-40 bg-gray-200">
                             @if($course->thumbnail)
@@ -176,34 +176,41 @@
                             
                             <!-- Lock Overlay -->
                             @if($isLocked)
-                                <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                                    <div class="text-center text-white">
-                                        <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <div class="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+                                    <div class="text-center text-white bg-black bg-opacity-70 px-4 py-3 rounded-lg shadow-lg backdrop-blur-sm">
+                                        <svg class="w-10 h-10 mx-auto mb-2 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                         </svg>
-                                        <p class="text-xs font-medium">Verrouillé</p>
+                                        <p class="text-sm font-medium">Cours verrouillé</p>
                                     </div>
                                 </div>
                             @endif
                             
                             <!-- Course Type and Sequence Badge -->
-                            <div class="absolute top-2 left-2">
-                                @if($course->is_auto_seeded && $course->exam_section)
+                            <div style="position: absolute; top: 8px; left: 8px; z-index: 10;">
+                                @if($course->sequence_order)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-600 text-white shadow-md">
+                                        {{ $course->sequence_order }}
+                                        @if($course->exam_section)
+                                            - {{ $course->exam_section }}
+                                        @endif
+                                    </span>
+                                @elseif($course->is_auto_seeded && $course->exam_section)
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        {{ $course->sequence_order }}. {{ $course->exam_section }}
+                                        {{ $course->exam_section }}
                                     </span>
                                 @endif
                             </div>
                             
                             <!-- Permit Category Badge -->
                             @if($course->permit_category_id)
-                                <div class="absolute top-2 right-2">
+                                <div style="position: absolute; top: 8px; right: 8px; z-index: 10;">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                         {{ $course->permitCategory->code }}
                                     </span>
                                 </div>
                             @else
-                                <div class="absolute top-2 right-2">
+                                <div style="position: absolute; top: 8px; right: 8px; z-index: 10;">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                         General
                                     </span>
@@ -216,6 +223,7 @@
                             <div class="flex items-start justify-between">
                                 <h3 class="text-lg font-medium text-gray-900 mb-1">{{ $course->title }}</h3>
                                 
+                                <div class="flex flex-col items-end">
                                 @if($course->progress_percentage == 100)
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                         <svg class="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
@@ -235,6 +243,9 @@
                                         {{ __('Pas commencé') }}
                                     </span>
                                 @endif
+                                
+
+                            </div>
                             </div>
                             
                             @if($course->category)
@@ -282,9 +293,7 @@
                                             </svg>
                                             {{ __('Verrouillé') }}
                                         </button>
-                                        @if($lockReason)
-                                            <p class="mt-2 text-xs text-red-600 text-center">{{ $lockReason }}</p>
-                                        @endif
+
                                     </div>
                                 @else
                                     <a href="{{ route('candidate.courses.show', $course) }}" 
