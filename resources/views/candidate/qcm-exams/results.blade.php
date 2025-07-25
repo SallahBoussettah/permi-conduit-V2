@@ -152,13 +152,19 @@
                                 </h4>
                             </div>
                             
-                            <div class="text-md text-gray-900 mb-4">{{ $answer->question->question_text }}</div>
-                            
                             @if($answer->question->image_path)
-                                <div class="mb-4">
-                                    <img src="{{ $answer->question->image_url }}" alt="Question Image" class="max-w-full h-auto max-h-64 rounded-lg">
+                                <div class="mb-4 flex justify-center">
+                                    <div class="bg-white p-3 rounded-lg shadow-md border border-gray-200">
+                                        <img src="{{ $answer->question->image_url }}" 
+                                             alt="Panneau de signalisation" 
+                                             class="max-h-48 max-w-full mx-auto rounded-lg">
+                                    </div>
                                 </div>
                             @endif
+                            
+                            <div class="text-center mb-4">
+                                <p class="text-md font-medium text-gray-900">{{ $answer->question->question_text }}</p>
+                            </div>
                             
                             <div class="space-y-3">
                                 @foreach($answer->question->answers as $option)

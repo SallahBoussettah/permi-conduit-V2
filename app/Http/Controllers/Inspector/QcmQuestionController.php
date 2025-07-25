@@ -151,7 +151,7 @@ class QcmQuestionController extends Controller
             'qcm_paper_id' => 'required|exists:qcm_papers,id',
             'question_text' => 'required|string|max:1000',
             'question_type' => 'required|in:multiple_choice,yes_no',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'explanation' => 'nullable|string|max:1000',
             'answers' => 'required|array|min:2',
             'answers.*.text' => 'required|string|max:500',
@@ -167,9 +167,7 @@ class QcmQuestionController extends Controller
         
         // Check if the paper belongs to the user's school
         $paper = QcmPaper::find($request->qcm_paper_id);
-        if (!$this->checkSchoolAccess($paper)) {
-            abort(403, 'Unauthorized action.');
-        }
+        $this->authorize('update', $paper);
         
         // Ensure papers don't exceed 10 questions
         $currentQuestionCount = QcmQuestion::where('qcm_paper_id', $request->qcm_paper_id)->count();
@@ -239,7 +237,7 @@ class QcmQuestionController extends Controller
             
             // Handle image upload if provided
             if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store('qcm_questions', 'public');
+                $imagePath = $request->file('image')->store('qcm-questions', 'public');
                 $question->image_path = $imagePath;
             }
             
@@ -333,7 +331,7 @@ class QcmQuestionController extends Controller
         $validator = Validator::make($request->all(), [
             'question_text' => 'required|string',
             'question_type' => 'required|in:multiple_choice,yes_no',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'explanation' => 'nullable|string',
             'sequence_number' => 'required|integer|min:1',
             'answers' => 'required|array|min:2',

@@ -78,28 +78,97 @@
                         <!-- Sequence Number (Hidden) -->
                         <input type="hidden" name="sequence_number" value="{{ $question->sequence_number }}">
 
-                        <!-- Image Upload -->
+                        <!-- Image Upload for Traffic Signs -->
                         <div>
-                            <label for="image" class="block text-sm font-medium text-gray-700">{{ __('Image (Optionnel)') }}</label>
+                            <label for="image" class="block text-sm font-medium text-gray-700">
+                                <svg class="inline-block w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                {{ __('Panneau de signalisation / Symbole') }}
+                            </label>
+                            
                             @if($question->image_path)
-                                <div class="mt-2">
-                                    <img src="{{ asset('storage/' . $question->image_path) }}" alt="Question Image" class="max-h-40 rounded-md">
-                                    <div class="mt-2">
-                                        <label class="inline-flex items-center">
-                                            <input type="checkbox" name="remove_image" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                            <span class="ml-2 text-sm text-gray-600">{{ __('Supprimer l\'image actuelle') }}</span>
-                                        </label>
+                                <div class="mt-3 p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                                    <div class="text-center">
+                                        <div class="mb-3">
+                                            <span class="inline-block px-3 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
+                                                {{ __('Image actuelle') }}
+                                            </span>
+                                        </div>
+                                        <img src="{{ asset('storage/' . $question->image_path) }}" 
+                                             alt="Panneau de signalisation" 
+                                             class="mx-auto max-h-48 max-w-full rounded-lg shadow-md border border-gray-200">
+                                        <div class="mt-3">
+                                            <label class="inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" name="remove_image" 
+                                                       class="rounded border-gray-300 text-red-600 shadow-sm focus:border-red-300 focus:ring focus:ring-red-200 focus:ring-opacity-50">
+                                                <span class="ml-2 text-sm text-red-600 font-medium">{{ __('Supprimer cette image') }}</span>
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             @endif
-                            <div class="mt-1">
-                                <input type="file" name="image" id="image" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 @error('image') border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 @enderror">
+                            
+                            <div class="mt-3">
+                                <div class="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-400 transition-colors">
+                                    <div class="space-y-1 text-center">
+                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                        <div class="flex text-sm text-gray-600">
+                                            <label for="image" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                                <span>{{ __('Télécharger un panneau') }}</span>
+                                                <input id="image" name="image" type="file" class="sr-only" accept="image/*" onchange="previewImage(this)">
+                                            </label>
+                                            <p class="pl-1">{{ __('ou glisser-déposer') }}</p>
+                                        </div>
+                                        <p class="text-xs text-gray-500">
+                                            {{ __('PNG, JPG, GIF jusqu\'à 2MB') }}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
+                            
+                            <!-- Image Preview -->
+                            <div id="image-preview" class="mt-3 hidden">
+                                <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                    <div class="text-center">
+                                        <div class="mb-2">
+                                            <span class="inline-block px-3 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full">
+                                                {{ __('Aperçu de la nouvelle image') }}
+                                            </span>
+                                        </div>
+                                        <img id="preview-img" src="" alt="Aperçu" class="mx-auto max-h-48 max-w-full rounded-lg shadow-md border border-gray-200">
+                                        <button type="button" onclick="clearImagePreview()" class="mt-2 text-sm text-red-600 hover:text-red-800 font-medium">
+                                            {{ __('Annuler') }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             @error('image')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
-                            <p class="mt-2 text-sm text-gray-500">{{ __('Télécharger une image optionnelle pour cette question.') }}</p>
-                        </div>
+                            
+                            <div class="mt-3 p-3 bg-blue-50 rounded-md">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-blue-700">
+                                            <strong>{{ __('Conseils pour les panneaux de signalisation:') }}</strong><br>
+                                            • {{ __('Utilisez des images claires et nettes') }}<br>
+                                            • {{ __('Préférez un fond blanc ou transparent') }}<br>
+                                            • {{ __('Assurez-vous que le panneau est bien visible') }}<br>
+                                            • {{ __('L\'image apparaîtra au-dessus de la question pendant l\'examen') }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>  }}
                         
                         <!-- Explanation -->
                         <div>
@@ -170,6 +239,31 @@
 
 @push('scripts')
 <script>
+    // Image preview functionality
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const previewContainer = document.getElementById('image-preview');
+                const previewImg = document.getElementById('preview-img');
+                
+                previewImg.src = e.target.result;
+                previewContainer.classList.remove('hidden');
+            };
+            
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    
+    function clearImagePreview() {
+        const input = document.getElementById('image');
+        const previewContainer = document.getElementById('image-preview');
+        
+        input.value = '';
+        previewContainer.classList.add('hidden');
+    }
+    
     document.addEventListener('DOMContentLoaded', function() {
         const answersContainer = document.getElementById('answers-container');
         const addAnswerButton = document.getElementById('add-answer');
@@ -207,6 +301,47 @@
                 button.closest('.answer-item').remove();
             });
         });
+        
+        // Drag and drop functionality for image upload
+        const dropZone = document.querySelector('.border-dashed');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight(e) {
+            dropZone.classList.add('border-indigo-400', 'bg-indigo-50');
+        }
+        
+        function unhighlight(e) {
+            dropZone.classList.remove('border-indigo-400', 'bg-indigo-50');
+        }
+        
+        dropZone.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                const input = document.getElementById('image');
+                input.files = files;
+                previewImage(input);
+            }
+        }
     });
 </script>
 @endpush
