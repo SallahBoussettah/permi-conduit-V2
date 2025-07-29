@@ -23,7 +23,7 @@ return new class extends Migration
             $table->integer('points_earned')->nullable(); // 0-3 points
             $table->boolean('is_eliminatory')->default(false);
             $table->enum('status', ['in_progress', 'completed', 'timed_out'])->default('in_progress');
-            $table->foreignId('school_id')->nullable()->constrained()->onDelete('set null');
+            $table->unsignedBigInteger('school_id')->nullable(); // Create column without constraint
             $table->timestamps();
         });
     }

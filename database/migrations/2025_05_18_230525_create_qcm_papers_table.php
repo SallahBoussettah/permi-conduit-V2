@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('permit_category_id')->constrained()->onDelete('cascade');
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->boolean('status')->default(true); // active/inactive
-            $table->foreignId('school_id')->nullable()->constrained()->onDelete('set null');
+            $table->unsignedBigInteger('school_id')->nullable(); // Create column without constraint
             $table->timestamps();
         });
     }
