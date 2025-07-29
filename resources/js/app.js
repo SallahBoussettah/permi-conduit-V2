@@ -76,8 +76,11 @@ Alpine.data('notificationDropdown', () => ({
         // Initial fetch
         this.fetchNotifications();
         
-        // Set up a polling mechanism to keep count in sync
-        setInterval(() => this.fetchNotifications(), 10000);
+        // Set up a polling mechanism to keep count in sync (every 3 seconds for testing)
+        setInterval(() => {
+            console.log('Polling for notifications...');
+            this.fetchNotifications();
+        }, 3000);
     },
     
     toggleDropdown() {

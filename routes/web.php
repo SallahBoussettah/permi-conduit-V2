@@ -548,4 +548,9 @@ Route::middleware(['auth'])->get('/test-notification', function () {
     }
 })->name('test-notification');
 
+// Test page for notifications (temporarily without auth for testing)
+Route::get('/test-notifications-page', function () {
+    return view('test-notifications');
+})->name('test-notifications-page');
+
 require __DIR__.'/auth.php';
