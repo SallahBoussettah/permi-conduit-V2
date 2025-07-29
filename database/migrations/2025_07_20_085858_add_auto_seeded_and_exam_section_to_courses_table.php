@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('courses', function (Blueprint $table) {
-            $table->boolean('is_auto_seeded')->default(false)->after('school_id');
+            $table->boolean('is_auto_seeded')->default(false);
             $table->string('exam_section')->nullable()->after('is_auto_seeded');
             $table->integer('sequence_order')->default(0)->after('exam_section');
         });
