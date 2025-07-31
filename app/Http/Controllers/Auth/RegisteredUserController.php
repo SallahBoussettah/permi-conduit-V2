@@ -37,22 +37,20 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['required', 'string', 'in:candidate,inspector'],
             'terms' => ['required', 'accepted'],
-            'school_id' => ['required_if:role,candidate', 'exists:schools,id'],
+            'school_id' => ['required', 'exists:schools,id'],
         ]);
 
-        // Get role ID from role name
-        $roleId = Role::where('name', $request->role)->first()->id ?? null;
+        // Get candidate role ID (all registrations are candidates now)
+        $roleId = Role::where('name', 'candidate')->first()->id ?? null;
         
         if (!$roleId) {
-            // Create the role if it doesn't exist
-            $role = Role::create(['name' => $request->role]);
+            // Create the candidate role if it doesn't exist
+            $role = Role::create(['name' => 'candidate']);
             $roleId = $role->id;
         }
 
-        // Only set inspectors to automatically approved if registered by an admin
-        // Candidates will always be pending approval
+        // All registrations are candidates and require approval
         $approvalStatus = 'pending';
         
         $userData = [
@@ -63,38 +61,29 @@ class RegisteredUserController extends Controller
             'approval_status' => $approvalStatus,
         ];
         
-        // Set school_id for candidates
-        if ($request->role === 'candidate' && $request->filled('school_id')) {
-            $school = \App\Models\School::find($request->school_id);
-            
-            // Only verify that the school is active (capacity will be checked during approval)
-            if ($school && $school->is_active) {
-                $userData['school_id'] = $school->id;
+        // Set school_id (all registrations are candidates now)
+        $school = \App\Models\School::find($request->school_id);
+        
+        // Only verify that the school is active (capacity will be checked during approval)
+        if ($school && $school->is_active) {
+            $userData['school_id'] = $school->id;
+        } else {
+            // Determine the specific error message
+            if ($school && !$school->is_active) {
+                $errorMessage = 'L\'école sélectionnée n\'accepte pas actuellement de nouvelles inscriptions.';
             } else {
-                // Determine the specific error message
-                if ($school && !$school->is_active) {
-                    $errorMessage = 'The selected school is not currently accepting new registrations.';
-                } else {
-                    $errorMessage = 'The selected school is unavailable. Please choose another school.';
-                }
-                
-                return redirect()->back()->withErrors(['school_id' => $errorMessage])->withInput();
+                $errorMessage = 'L\'école sélectionnée n\'est pas disponible. Veuillez choisir une autre école.';
             }
+            
+            return redirect()->back()->withErrors(['school_id' => $errorMessage])->withInput();
         }
 
         $user = User::create($userData);
 
         event(new Registered($user));
 
-        // If user is a candidate, redirect to pending approval page
-        if ($request->role === 'candidate') {
-            return redirect()->route('registration.pending');
-        }
-
-        // Only automatically log in approved users
-        Auth::login($user);
-
-        return redirect(route('dashboard', absolute: false));
+        // All registrations are candidates and require approval
+        return redirect()->route('registration.pending');
     }
     
     /**
