@@ -135,10 +135,10 @@
                                                         <a href="{{ route('inspector.qcm-papers.questions.edit', ['qcmPaper' => $qcmPaper->id, 'question' => $question->id]) }}" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
                                                             {{ __('Modifier') }}
                                                         </a>
-                                                        <form action="{{ route('inspector.qcm-papers.questions.destroy', ['qcmPaper' => $qcmPaper->id, 'question' => $question->id]) }}" method="POST" class="inline">
+                                                        <form action="{{ route('inspector.qcm-papers.questions.destroy', ['qcmPaper' => $qcmPaper->id, 'question' => $question->id]) }}" method="POST" class="inline delete-question-form">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir supprimer cette question?') }}')">
+                                                            <button type="button" class="delete-question-btn inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" data-question-text="{{ Str::limit($question->question_text, 50) }}">
                                                                 {{ __('Supprimer') }}
                                                             </button>
                                                         </form>
@@ -172,4 +172,95 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Question Confirmation Modal -->
+<div id="delete-question-modal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                            {{ __('Supprimer la question') }}
+                        </h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500">
+                                {{ __('Êtes-vous sûr de vouloir supprimer cette question ?') }}
+                            </p>
+                            <p class="text-sm text-gray-700 font-medium mt-2" id="question-preview">
+                                <!-- Question text will be inserted here -->
+                            </p>
+                            <p class="text-sm text-red-600 mt-2">
+                                {{ __('Cette action ne peut pas être annulée et supprimera également toutes les réponses associées.') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" id="confirm-delete-question" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    {{ __('Supprimer') }}
+                </button>
+                <button type="button" id="cancel-delete-question" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    {{ __('Annuler') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentFormToSubmit = null;
+    
+    // Handle delete question button clicks
+    document.querySelectorAll('.delete-question-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const form = this.closest('.delete-question-form');
+            const questionText = this.getAttribute('data-question-text');
+            
+            currentFormToSubmit = form;
+            
+            // Update modal content
+            document.getElementById('question-preview').textContent = '"' + questionText + '"';
+            
+            // Show modal
+            document.getElementById('delete-question-modal').classList.remove('hidden');
+        });
+    });
+    
+    // Handle confirm delete
+    document.getElementById('confirm-delete-question').addEventListener('click', function() {
+        if (currentFormToSubmit) {
+            currentFormToSubmit.submit();
+        }
+    });
+    
+    // Handle cancel delete
+    document.getElementById('cancel-delete-question').addEventListener('click', function() {
+        currentFormToSubmit = null;
+        document.getElementById('delete-question-modal').classList.add('hidden');
+    });
+    
+    // Close modal when clicking outside
+    document.getElementById('delete-question-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            currentFormToSubmit = null;
+            this.classList.add('hidden');
+        }
+    });
+});
+</script>
+@endpush
+
 @endsection 

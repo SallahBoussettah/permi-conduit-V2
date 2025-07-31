@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class QcmPaperController extends Controller
 {
@@ -173,17 +174,49 @@ class QcmPaperController extends Controller
             // Start a database transaction
             DB::beginTransaction();
             
-            // Get a count of exams to show in success message
+            // Get counts for success message
             $examsCount = $qcmPaper->exams()->count();
+            $questionsCount = $qcmPaper->questions()->count();
             
-            // Delete all exams associated with this paper
+            \Log::info('Deleting QCM Paper ID: ' . $qcmPaper->id . ' with ' . $examsCount . ' exams and ' . $questionsCount . ' questions');
+            
+            // 1. Delete all exam answers for exams related to this paper
+            foreach ($qcmPaper->exams as $exam) {
+                $exam->examAnswers()->delete();
+                \Log::info('Deleted exam answers for exam ID: ' . $exam->id);
+            }
+            
+            // 2. Delete all exams associated with this paper
             $qcmPaper->exams()->delete();
+            \Log::info('Deleted ' . $examsCount . ' exams');
             
-            // Delete all questions (and by cascade, their answers) associated with this paper
+            // 3. Delete all question images and answers
+            foreach ($qcmPaper->questions as $question) {
+                // Delete question image if it exists
+                if ($question->image_path && \Storage::disk('public')->exists($question->image_path)) {
+                    \Storage::disk('public')->delete($question->image_path);
+                    \Log::info('Deleted image: ' . $question->image_path);
+                }
+                
+                // Delete all answers for this question
+                $question->answers()->delete();
+                \Log::info('Deleted answers for question ID: ' . $question->id);
+            }
+            
+            // 4. Delete all questions associated with this paper
             $qcmPaper->questions()->delete();
+            \Log::info('Deleted ' . $questionsCount . ' questions');
             
-            // Delete the paper itself
+            // 5. Delete all sections associated with this paper (if sections exist)
+            if (Schema::hasColumn('qcm_sections', 'qcm_paper_id')) {
+                $sectionsCount = $qcmPaper->sections()->count();
+                $qcmPaper->sections()->delete();
+                \Log::info('Deleted ' . $sectionsCount . ' sections');
+            }
+            
+            // 6. Delete the paper itself
             $qcmPaper->delete();
+            \Log::info('Deleted QCM Paper ID: ' . $qcmPaper->id);
             
             // Commit the transaction
             DB::commit();
@@ -192,6 +225,9 @@ class QcmPaperController extends Controller
             if ($examsCount > 0) {
                 $successMessage .= ' ' . $examsCount . ' related exam(s) were also deleted.';
             }
+            if ($questionsCount > 0) {
+                $successMessage .= ' ' . $questionsCount . ' question(s) and their answers were also deleted.';
+            }
             
             return redirect()->route('inspector.qcm-papers.index')
                 ->with('success', $successMessage);
@@ -199,6 +235,8 @@ class QcmPaperController extends Controller
         } catch (\Exception $e) {
             // If something goes wrong, rollback the transaction
             DB::rollBack();
+            
+            \Log::error('Failed to delete QCM Paper ID: ' . $qcmPaper->id . ' - Error: ' . $e->getMessage());
             
             return redirect()->back()
                 ->with('error', 'Failed to delete QCM paper: ' . $e->getMessage());

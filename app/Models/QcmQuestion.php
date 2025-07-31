@@ -75,7 +75,7 @@ class QcmQuestion extends Model
      */
     public function examAnswers(): HasMany
     {
-        return $this->hasMany(ExamAnswer::class);
+        return $this->hasMany(QcmExamAnswer::class);
     }
     
     /**

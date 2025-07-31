@@ -240,17 +240,16 @@
                                                         placeholder="{{ __('Texte de la réponse') }}"
                                                         value="{{ $answer->answer_text }}" required>
                                                 </div>
-                                                @if($index > 1)
-                                                    <button type="button"
-                                                        class="remove-answer ml-3 text-red-600 hover:text-red-900">
-                                                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                                                            fill="currentColor">
-                                                            <path fill-rule="evenodd"
-                                                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                                                                clip-rule="evenodd" />
-                                                        </svg>
-                                                    </button>
-                                                @endif
+                                                <button type="button"
+                                                    class="remove-answer ml-3 text-red-600 hover:text-red-900" 
+                                                    style="{{ count($question->answers) <= 2 ? 'display: none;' : '' }}">
+                                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                                        fill="currentColor">
+                                                        <path fill-rule="evenodd"
+                                                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                            clip-rule="evenodd" />
+                                                    </svg>
+                                                </button>
                                             </div>
                                         </div>
                                     @endforeach
@@ -286,6 +285,77 @@
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-confirmation-modal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                {{ __('Supprimer la réponse') }}
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">
+                                    {{ __('Êtes-vous sûr de vouloir supprimer cette réponse ? Cette action ne peut pas être annulée.') }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" id="confirm-delete" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        {{ __('Supprimer') }}
+                    </button>
+                    <button type="button" id="cancel-delete" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        {{ __('Annuler') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="error-modal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="error-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="error-modal-title">
+                                {{ __('Attention') }}
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500" id="error-modal-message">
+                                    <!-- Error message will be inserted here -->
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" id="close-error-modal" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        {{ __('OK') }}
+                    </button>
                 </div>
             </div>
         </div>
@@ -345,11 +415,10 @@
                 addAnswerButton.addEventListener('click', function (e) {
                     e.preventDefault();
                     console.log('Add answer button clicked in edit view!');
-                    alert('Edit button clicked!'); // Temporary alert for testing
 
                     // Limit to maximum 4 answers for multiple choice
                     if (answerCount >= 4) {
-                        alert('Maximum 4 réponses autorisées');
+                        showErrorModal('Maximum 4 réponses autorisées');
                         return;
                     }
 
@@ -375,9 +444,19 @@
                     console.log('New answer added in edit view, count:', answerCount); // Debug log
 
                     // Add event listener to the new remove button
-                    newAnswer.querySelector('.remove-answer').addEventListener('click', function () {
-                        newAnswer.remove();
-                        updateAnswerIndices();
+                    newAnswer.querySelector('.remove-answer').addEventListener('click', function (e) {
+                        e.preventDefault();
+                        console.log('New remove button clicked!');
+                        
+                        // Don't allow removal if we only have 2 answers
+                        const answerItems = document.querySelectorAll('.answer-item');
+                        if (answerItems.length <= 2) {
+                            showErrorModal('Vous devez avoir au moins 2 réponses');
+                            return;
+                        }
+                        
+                        // Show confirmation modal
+                        showDeleteConfirmationModal(newAnswer.querySelector('.remove-answer'));
                     });
 
                     updateRemoveButtons();
@@ -403,10 +482,12 @@
                     const removeButtons = document.querySelectorAll('.remove-answer');
                     const answerItems = document.querySelectorAll('.answer-item');
 
+                    console.log('Updating remove buttons, answer count:', answerItems.length);
+
                     // Show remove buttons only if we have more than 2 answers
                     removeButtons.forEach(button => {
                         if (answerItems.length > 2) {
-                            button.style.display = 'block';
+                            button.style.display = 'inline-block';
                         } else {
                             button.style.display = 'none';
                         }
@@ -414,15 +495,39 @@
                 }
 
                 // Add event listeners to existing remove buttons
-                document.querySelectorAll('.remove-answer').forEach(button => {
-                    button.addEventListener('click', function () {
-                        button.closest('.answer-item').remove();
-                        updateAnswerIndices();
+                console.log('Setting up event listeners for existing remove buttons');
+                const existingRemoveButtons = document.querySelectorAll('.remove-answer');
+                console.log('Found', existingRemoveButtons.length, 'existing remove buttons');
+                
+                existingRemoveButtons.forEach((button, index) => {
+                    console.log('Setting up listener for button', index, button);
+                    button.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Remove button clicked!', button);
+                        // Don't allow removal if we only have 2 answers
+                        const answerItems = document.querySelectorAll('.answer-item');
+                        if (answerItems.length <= 2) {
+                            showErrorModal('Vous devez avoir au moins 2 réponses');
+                            return;
+                        }
+                        
+                        // Show confirmation modal
+                        showDeleteConfirmationModal(button);
                     });
                 });
 
                 // Initialize remove button visibility
                 updateRemoveButtons();
+                
+                // Debug: Check button visibility
+                setTimeout(() => {
+                    const buttons = document.querySelectorAll('.remove-answer');
+                    console.log('Remove buttons after initialization:');
+                    buttons.forEach((btn, i) => {
+                        console.log(`Button ${i}:`, btn, 'Display:', btn.style.display, 'Visible:', btn.offsetWidth > 0);
+                    });
+                }, 100);
 
                 // Drag and drop functionality for image upload
                 const dropZone = document.querySelector('.border-dashed');
@@ -464,6 +569,58 @@
                         previewImage(input);
                     }
                 }
+
+                // Modal functions
+                let currentButtonToDelete = null;
+
+                function showDeleteConfirmationModal(button) {
+                    currentButtonToDelete = button;
+                    const modal = document.getElementById('delete-confirmation-modal');
+                    modal.classList.remove('hidden');
+                }
+
+                function showErrorModal(message) {
+                    const modal = document.getElementById('error-modal');
+                    const messageElement = document.getElementById('error-modal-message');
+                    messageElement.textContent = message;
+                    modal.classList.remove('hidden');
+                }
+
+                // Handle delete confirmation
+                document.getElementById('confirm-delete').addEventListener('click', function() {
+                    if (currentButtonToDelete) {
+                        currentButtonToDelete.closest('.answer-item').remove();
+                        updateAnswerIndices();
+                        updateRemoveButtons();
+                        currentButtonToDelete = null;
+                    }
+                    document.getElementById('delete-confirmation-modal').classList.add('hidden');
+                });
+
+                // Handle delete cancellation
+                document.getElementById('cancel-delete').addEventListener('click', function() {
+                    currentButtonToDelete = null;
+                    document.getElementById('delete-confirmation-modal').classList.add('hidden');
+                });
+
+                // Handle error modal close
+                document.getElementById('close-error-modal').addEventListener('click', function() {
+                    document.getElementById('error-modal').classList.add('hidden');
+                });
+
+                // Close modals when clicking outside
+                document.getElementById('delete-confirmation-modal').addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        currentButtonToDelete = null;
+                        this.classList.add('hidden');
+                    }
+                });
+
+                document.getElementById('error-modal').addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.classList.add('hidden');
+                    }
+                });
             });
         </script>
     @endpush

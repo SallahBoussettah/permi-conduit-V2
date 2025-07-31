@@ -571,5 +571,7 @@
         updateMobileNotificationCount();
         setInterval(updateMobileNotificationCount, 10000);
     </script>
+    
+    @stack('scripts')
 </body>
 </html> 
