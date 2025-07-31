@@ -503,7 +503,7 @@
                                             <div>
                                                 <p class="text-indigo-700 font-semibold">{{ __('Cours créés') }}</p>
                                                 <h3 class="text-3xl font-bold mt-1 text-indigo-700">
-                                                    {{ \App\Models\Course::where('created_by', Auth::id())->count() }}
+                                                    {{ \App\Models\Course::where('school_id', Auth::user()->school_id)->count() }}
                                                 </h3>
                                             </div>
                                             <div class="bg-white bg-opacity-30 rounded-full p-3">
@@ -533,7 +533,7 @@
                                             <div>
                                                 <p class="text-yellow-700 font-semibold">{{ __('QCM créés') }}</p>
                                                 <h3 class="text-3xl font-bold mt-1 text-yellow-700">
-                                                    {{ \App\Models\QcmPaper::where('created_by', Auth::id())->count() }}
+                                                    {{ \App\Models\QcmPaper::where('school_id', Auth::user()->school_id)->count() }}
                                                 </h3>
                                             </div>
                                             <div class="bg-white bg-opacity-30 rounded-full p-3">
@@ -564,7 +564,7 @@
                                                 <p class="text-green-700 font-semibold">{{ __('Candidats actifs') }}</p>
                                                 <h3 class="text-3xl font-bold mt-1 text-green-700">
                                                     {{ \App\Models\User::whereHas('role', function ($q) {
-                                $q->where('name', 'candidate'); })->where('is_active', true)->count() }}
+                                $q->where('name', 'candidate'); })->where('is_active', true)->where('school_id', Auth::user()->school_id)->count() }}
                                                 </h3>
                                             </div>
                                             <div class="bg-white bg-opacity-30 rounded-full p-3">
@@ -593,7 +593,12 @@
                                             <div>
                                                 <p class="text-blue-700 font-semibold">{{ __('Messages non lus') }}</p>
                                                 <h3 class="text-3xl font-bold mt-1 text-blue-700">
-                                                    0
+                                                    {{ \App\Models\ChatMessage::whereHas('conversation', function ($q) {
+                                $q->where('inspector_id', Auth::id())
+                                    ->whereHas('candidate', function ($subQ) {
+                                        $subQ->where('school_id', Auth::user()->school_id);
+                                    });
+                            })->where('user_id', '!=', Auth::id())->whereNull('read_at')->count() }}
                                                 </h3>
                                             </div>
                                             <div class="bg-white bg-opacity-30 rounded-full p-3">
@@ -735,7 +740,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody class="bg-white divide-y divide-gray-200">
-                                                @foreach(\App\Models\Course::where('created_by', Auth::id())->latest()->take(5)->get() as $course)
+                                                @foreach(\App\Models\Course::where('school_id', Auth::user()->school_id)->latest()->take(5)->get() as $course)
                                                     <tr>
                                                         <td class="px-6 py-4 whitespace-nowrap">
                                                             <div class="text-sm font-medium text-gray-900">{{ $course->title }}</div>
@@ -751,7 +756,7 @@
                                                     </tr>
                                                 @endforeach
 
-                                                @if(\App\Models\Course::where('created_by', Auth::id())->count() == 0)
+                                                @if(\App\Models\Course::where('school_id', Auth::user()->school_id)->count() == 0)
                                                     <tr>
                                                         <td colspan="3" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                                             {{ __('Aucun cours créé pour le moment.') }}
@@ -886,6 +891,78 @@
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent QCM Exam Results -->
+                        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                            <div class="p-6">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h2 class="text-xl font-bold text-gray-900">{{ __('Résultats QCM récents de l\'école') }}</h2>
+                                    <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800">{{ __('Voir tout') }}</a>
+                                </div>
+
+                                <div class="overflow-hidden">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th scope="col"
+                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    {{ __('Candidat') }}
+                                                </th>
+                                                <th scope="col"
+                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    {{ __('QCM') }}
+                                                </th>
+                                                <th scope="col"
+                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    {{ __('Score') }}
+                                                </th>
+                                                <th scope="col"
+                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    {{ __('Date') }}
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            @php
+                                                $recentExams = \App\Models\QcmExam::whereHas('user', function ($q) {
+                                                    $q->where('school_id', Auth::user()->school_id);
+                                                })->with(['user', 'paper'])->latest()->take(5)->get();
+                                            @endphp
+
+                                            @forelse($recentExams as $exam)
+                                                <tr>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <div class="text-sm font-medium text-gray-900">{{ $exam->user->name }}</div>
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <div class="text-sm text-gray-500">{{ Str::limit($exam->paper->title, 30) }}</div>
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                                                                    @if($exam->correct_answers_count >= 9) bg-green-100 text-green-800
+                                                                                    @elseif($exam->correct_answers_count >= 7) bg-yellow-100 text-yellow-800
+                                                                                    @elseif($exam->correct_answers_count >= 6) bg-orange-100 text-orange-800
+                                                                                    @else bg-red-100 text-red-800
+                                                                                    @endif">
+                                                            {{ $exam->correct_answers_count }}/10
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        {{ $exam->created_at->format('d/m/Y H:i') }}
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                                        {{ __('Aucun examen QCM récent dans votre école.') }}
+                                                    </td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
