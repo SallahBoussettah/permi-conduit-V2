@@ -34,6 +34,31 @@ class CourseController extends Controller
     }
 
     /**
+     * Check if the user can access the given course based on school membership.
+     *
+     * @param  \App\Models\Course  $course
+     * @param  \App\Models\User|null  $user
+     * @return void
+     * @throws \Symfony\Component\HttpKernel\Exception\HttpException
+     */
+    private function authorizeSchoolAccess(Course $course, $user = null)
+    {
+        $user = $user ?: Auth::user();
+        
+        if ($user->school_id) {
+            // User has a school, course must belong to the same school
+            if ($course->school_id !== $user->school_id) {
+                abort(403, 'You do not have permission to access this course.');
+            }
+        } else {
+            // User has no school, can only access courses with no school (legacy courses)
+            if ($course->school_id !== null) {
+                abort(403, 'You do not have permission to access this course.');
+            }
+        }
+    }
+
+    /**
      * Display a listing of the courses.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -41,7 +66,16 @@ class CourseController extends Controller
      */
     public function index(Request $request)
     {
+        $user = Auth::user();
         $query = Course::with(['permitCategory', 'materials']);
+        
+        // CRITICAL: Filter by school - only show courses from the inspector's school
+        if ($user->school_id) {
+            $query->where('school_id', $user->school_id);
+        } else {
+            // If inspector has no school_id, only show courses with no school_id (legacy courses)
+            $query->whereNull('school_id');
+        }
         
         // Filter by permit category if specified
         $selectedPermitCategory = $request->input('permit_category');
@@ -125,6 +159,9 @@ class CourseController extends Controller
         $validated['inspector_id'] = Auth::id();
         $validated['created_by'] = Auth::id();
         $validated['status'] = true;
+        
+        // CRITICAL: Assign the course to the inspector's school
+        $validated['school_id'] = Auth::user()->school_id;
 
         $course = Course::create($validated);
 
@@ -144,6 +181,9 @@ class CourseController extends Controller
      */
     public function show(Course $course)
     {
+        // CRITICAL: Ensure the course belongs to the inspector's school
+        $this->authorizeSchoolAccess($course);
+        
         $materials = $course->materials()->orderBy('sequence_order')->get();
         return view('inspector.courses.show', compact('course', 'materials'));
     }
@@ -156,6 +196,9 @@ class CourseController extends Controller
      */
     public function edit(Course $course)
     {
+        // CRITICAL: Ensure the course belongs to the inspector's school
+        $this->authorizeSchoolAccess($course);
+        
         $examSections = ExamSection::orderBy('name')->pluck('name', 'id');
         $categories = CourseCategory::where('status', true)->orderBy('name')->pluck('name', 'id');
         $permitCategories = PermitCategory::where('status', true)->orderBy('name')->pluck('name', 'id');
@@ -171,6 +214,9 @@ class CourseController extends Controller
      */
     public function update(Request $request, Course $course)
     {
+        // CRITICAL: Ensure the course belongs to the inspector's school
+        $this->authorizeSchoolAccess($course);
+        
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -210,6 +256,9 @@ class CourseController extends Controller
      */
     public function destroy(Course $course)
     {
+        // CRITICAL: Ensure the course belongs to the inspector's school
+        $this->authorizeSchoolAccess($course);
+        
         // Check if the course has materials
         if ($course->materials()->count() > 0) {
             return redirect()->route('inspector.courses.show', $course)

@@ -15,6 +15,30 @@ use Illuminate\Support\Facades\Response;
 class CourseMaterialController extends Controller
 {
     /**
+     * Check if the user can access the given course based on school membership.
+     *
+     * @param  \App\Models\Course  $course
+     * @param  \App\Models\User|null  $user
+     * @return void
+     * @throws \Symfony\Component\HttpKernel\Exception\HttpException
+     */
+    private function authorizeSchoolAccess(Course $course, $user = null)
+    {
+        $user = $user ?: Auth::user();
+        
+        if ($user->school_id) {
+            // User has a school, course must belong to the same school
+            if ($course->school_id !== $user->school_id) {
+                abort(403, 'You do not have permission to access this course.');
+            }
+        } else {
+            // User has no school, can only access courses with no school (legacy courses)
+            if ($course->school_id !== null) {
+                abort(403, 'You do not have permission to access this course.');
+            }
+        }
+    }
+    /**
      * Display the specified material.
      *
      * @param  \App\Models\Course  $course
@@ -24,6 +48,9 @@ class CourseMaterialController extends Controller
     public function show(Course $course, CourseMaterial $material)
     {
         $user = Auth::user();
+        
+        // CRITICAL: Ensure the course belongs to the candidate's school
+        $this->authorizeSchoolAccess($course, $user);
         
         // Get user's progress for this material
         $progress = UserCourseProgress::firstOrCreate(
@@ -87,6 +114,10 @@ class CourseMaterialController extends Controller
      */
     public function servePdf(Course $course, CourseMaterial $material)
     {
+        // CRITICAL: Ensure the course belongs to the candidate's school
+        $user = Auth::user();
+        $this->authorizeSchoolAccess($course, $user);
+        
         // Check if file exists
         $filePath = 'public/pdfs/' . $material->content_path_or_url;
         
@@ -113,6 +144,10 @@ class CourseMaterialController extends Controller
      */
     public function serveAudio(Course $course, CourseMaterial $material)
     {
+        // CRITICAL: Ensure the course belongs to the candidate's school
+        $user = Auth::user();
+        $this->authorizeSchoolAccess($course, $user);
+        
         // Check if file exists
         $filePath = 'public/audio/' . $material->content_path_or_url;
         
@@ -141,6 +176,10 @@ class CourseMaterialController extends Controller
      */
     public function updateProgress(Request $request, Course $course, CourseMaterial $material)
     {
+        // CRITICAL: Ensure the course belongs to the candidate's school
+        $user = Auth::user();
+        $this->authorizeSchoolAccess($course, $user);
+        
         // Different validation rules based on material type
         if ($material->material_type === 'video' || $material->material_type === 'audio') {
             $request->validate([
@@ -192,6 +231,10 @@ class CourseMaterialController extends Controller
      */
     public function markAsComplete(Request $request, Course $course, CourseMaterial $material)
     {
+        // CRITICAL: Ensure the course belongs to the candidate's school
+        $user = Auth::user();
+        $this->authorizeSchoolAccess($course, $user);
+        
         try {
             $user = Auth::user();
             

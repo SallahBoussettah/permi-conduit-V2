@@ -17,10 +17,37 @@ use Illuminate\Support\Facades\Response;
 class CourseMaterialController extends Controller
 {
     /**
+     * Check if the user can access the given course based on school membership.
+     *
+     * @param  \App\Models\Course  $course
+     * @param  \App\Models\User|null  $user
+     * @return void
+     * @throws \Symfony\Component\HttpKernel\Exception\HttpException
+     */
+    private function authorizeSchoolAccess(Course $course, $user = null)
+    {
+        $user = $user ?: auth()->user();
+        
+        if ($user->school_id) {
+            // User has a school, course must belong to the same school
+            if ($course->school_id !== $user->school_id) {
+                abort(403, 'You do not have permission to access this course.');
+            }
+        } else {
+            // User has no school, can only access courses with no school (legacy courses)
+            if ($course->school_id !== null) {
+                abort(403, 'You do not have permission to access this course.');
+            }
+        }
+    }
+    /**
      * Display a listing of the course materials.
      */
     public function index(Course $course)
     {
+        // CRITICAL: Ensure the course belongs to the inspector's school
+        $this->authorizeSchoolAccess($course);
+        
         $materials = $course->materials()->orderBy('sequence_order', 'asc')->paginate(10);
         return view('inspector.materials.index', compact('course', 'materials'));
     }
@@ -30,6 +57,9 @@ class CourseMaterialController extends Controller
      */
     public function create(Course $course)
     {
+        // CRITICAL: Ensure the course belongs to the inspector's school
+        $this->authorizeSchoolAccess($course);
+        
         return view('inspector.materials.create', compact('course'));
     }
 
@@ -38,6 +68,9 @@ class CourseMaterialController extends Controller
      */
     public function store(Request $request, Course $course)
     {
+        // CRITICAL: Ensure the course belongs to the inspector's school
+        $this->authorizeSchoolAccess($course);
+        
         // Debug upload information 
         Log::info('Audio upload attempt - UPDATED METHOD', [
             'POST size' => $request->header('Content-Length'),
@@ -448,6 +481,9 @@ class CourseMaterialController extends Controller
      */
     public function show(Course $course, CourseMaterial $material)
     {
+        // CRITICAL: Ensure the course belongs to the inspector's school
+        $this->authorizeSchoolAccess($course);
+        
         return view('inspector.materials.show', compact('course', 'material'));
     }
 
@@ -456,6 +492,9 @@ class CourseMaterialController extends Controller
      */
     public function edit(Course $course, CourseMaterial $material)
     {
+        // CRITICAL: Ensure the course belongs to the inspector's school
+        $this->authorizeSchoolAccess($course);
+        
         return view('inspector.materials.edit', compact('course', 'material'));
     }
 
@@ -464,6 +503,9 @@ class CourseMaterialController extends Controller
      */
     public function update(Request $request, Course $course, CourseMaterial $material)
     {
+        // CRITICAL: Ensure the course belongs to the inspector's school
+        $this->authorizeSchoolAccess($course);
+        
         // Basic validation for all material types
         $rules = [
             'title' => 'required|string|max:255',
@@ -649,6 +691,9 @@ class CourseMaterialController extends Controller
      */
     public function destroy(Course $course, CourseMaterial $material)
     {
+        // CRITICAL: Ensure the course belongs to the inspector's school
+        $this->authorizeSchoolAccess($course);
+        
         // Delete the relevant file based on material type
         if ($material->material_type === 'pdf' && $material->content_path_or_url) {
             Storage::delete('public/pdfs/' . $material->content_path_or_url);

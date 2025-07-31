@@ -53,6 +53,14 @@ Route::get('/fr', function (Request $request) {
 })->name('french');
 
 Route::get('/dashboard', function () {
+    $user = auth()->user();
+    
+    // If user is an admin, use the AdminController to get school-scoped statistics
+    if ($user && $user->isAdmin()) {
+        return app(\App\Http\Controllers\AdminController::class)->dashboard();
+    }
+    
+    // For other users, just return the basic dashboard view
     return view('dashboard');
 })->middleware(['auth', 'verified', 'App\Http\Middleware\CheckUserApproved'])->name('dashboard');
 
@@ -61,10 +69,7 @@ Route::middleware(['auth', 'App\Http\Middleware\CheckUserApproved'])->group(func
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
-    // Dashboard - already accessible to all authenticated users
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    // Dashboard - handled by the main route above
     
     // Admin routes
     Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {

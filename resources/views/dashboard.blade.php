@@ -110,6 +110,8 @@
                                                     {{ __('Bienvenue dans votre espace d\'administration. Voici un aperçu des statistiques.') }}
                                                 </p>
 
+
+
                                                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                                                     <!-- Total Users -->
                                                     <div class="bg-white rounded-lg p-4 border border-blue-500">
@@ -117,7 +119,7 @@
                                                             <div>
                                                                 <p class="text-blue-700 font-semibold">{{ __('Utilisateurs') }}</p>
                                                                 <h3 class="text-3xl font-bold mt-1 text-blue-700">
-                                                                    {{ \App\Models\User::count() }}
+                                                                    {{ $statistics['total_users'] ?? \App\Models\User::count() }}
                                                                 </h3>
                                                             </div>
                                                             <div class="bg-blue-100 rounded-full p-3">
@@ -147,7 +149,7 @@
                                                             <div>
                                                                 <p class="text-yellow-700 font-semibold">{{ __('Inspecteurs') }}</p>
                                                                 <h3 class="text-3xl font-bold mt-1 text-yellow-700">
-                                                                    {{ \App\Models\User::whereHas('role', function ($q) {
+                                                                    {{ $statistics['inspectors_count'] ?? \App\Models\User::whereHas('role', function ($q) {
                                         $q->where('name', 'inspector'); })->count() }}
                                                                 </h3>
                                                             </div>
@@ -178,7 +180,7 @@
                                                             <div>
                                                                 <p class="text-green-700 font-semibold">{{ __('Candidats') }}</p>
                                                                 <h3 class="text-3xl font-bold mt-1 text-green-700">
-                                                                    {{ \App\Models\User::whereHas('role', function ($q) {
+                                                                    {{ $statistics['candidates_count'] ?? \App\Models\User::whereHas('role', function ($q) {
                                         $q->where('name', 'candidate'); })->count() }}
                                                                 </h3>
                                                             </div>
@@ -209,7 +211,7 @@
                                                             <div>
                                                                 <p class="text-purple-700 font-semibold">{{ __('Examens QCM') }}</p>
                                                                 <h3 class="text-3xl font-bold mt-1 text-purple-700">
-                                                                    {{ \App\Models\QcmExam::count() }}
+                                                                    {{ $statistics['qcm_exams_count'] ?? \App\Models\QcmExam::count() }}
                                                                 </h3>
                                                             </div>
                                                             <div class="bg-purple-100 rounded-full p-3">

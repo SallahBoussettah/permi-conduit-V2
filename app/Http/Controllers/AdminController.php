@@ -30,7 +30,43 @@ class AdminController extends Controller
      */
     public function dashboard()
     {
-        return view('admin.dashboard');
+        $user = auth()->user();
+
+        // Always initialize statistics
+        $statistics = [];
+
+        // If the user is a regular admin (not super admin) with a school, scope statistics to their school
+        if ($user->isAdmin() && !$user->isSuperAdmin() && $user->school_id) {
+            $schoolId = $user->school_id;
+
+            // Get school-scoped statistics
+            $statistics = [
+                'total_users' => \App\Models\User::where('school_id', $schoolId)->count(),
+                'inspectors_count' => \App\Models\User::where('school_id', $schoolId)
+                    ->whereHas('role', function ($q) {
+                        $q->where('name', 'inspector');
+                    })->count(),
+                'candidates_count' => \App\Models\User::where('school_id', $schoolId)
+                    ->whereHas('role', function ($q) {
+                        $q->where('name', 'candidate');
+                    })->count(),
+                'qcm_exams_count' => \App\Models\QcmExam::where('school_id', $schoolId)->count(),
+            ];
+        } else {
+            // For super admins or users without school, show global statistics
+            $statistics = [
+                'total_users' => \App\Models\User::count(),
+                'inspectors_count' => \App\Models\User::whereHas('role', function ($q) {
+                    $q->where('name', 'inspector');
+                })->count(),
+                'candidates_count' => \App\Models\User::whereHas('role', function ($q) {
+                    $q->where('name', 'candidate');
+                })->count(),
+                'qcm_exams_count' => \App\Models\QcmExam::count(),
+            ];
+        }
+
+        return view('dashboard', compact('statistics'));
     }
 
     /**
@@ -75,7 +111,7 @@ class AdminController extends Controller
             'approved_at' => now(),
             'approved_by' => auth()->id(),
         ];
-        
+
         // Set the school_id to the same as the admin's school
         if (auth()->user()->school_id) {
             $userData['school_id'] = auth()->user()->school_id;
@@ -101,14 +137,14 @@ class AdminController extends Controller
         $query = User::whereHas('role', function ($query) {
             $query->where('name', 'inspector');
         });
-        
+
         // Scope to the admin's school
         if (!$user->isSuperAdmin() && $user->school_id) {
             $query->where('school_id', $user->school_id);
         }
-        
+
         $inspectors = $query->orderBy('name')->paginate(10);
-        
+
         return view('admin.inspectors.index', compact('inspectors'));
     }
 
@@ -121,13 +157,20 @@ class AdminController extends Controller
     public function editInspector($id)
     {
         $inspector = User::findOrFail($id);
-        
+        $user = auth()->user();
+
         // Make sure the user is an inspector
         if (!$inspector->hasRole('inspector')) {
             return redirect()->route('admin.inspectors')
                 ->with('error', __('Cet utilisateur n\'est pas un inspecteur.'));
         }
-        
+
+        // CRITICAL: Ensure the inspector belongs to the admin's school
+        if (!$user->isSuperAdmin() && $user->school_id && $inspector->school_id !== $user->school_id) {
+            return redirect()->route('admin.inspectors')
+                ->with('error', __('Vous n\'avez pas la permission de modifier cet inspecteur.'));
+        }
+
         return view('admin.inspectors.edit', compact('inspector'));
     }
 
@@ -141,36 +184,43 @@ class AdminController extends Controller
     public function updateInspector(Request $request, $id)
     {
         $inspector = User::findOrFail($id);
-        
+        $user = auth()->user();
+
         // Make sure the user is an inspector
         if (!$inspector->hasRole('inspector')) {
             return redirect()->route('admin.inspectors')
                 ->with('error', __('Cet utilisateur n\'est pas un inspecteur.'));
         }
-        
+
+        // CRITICAL: Ensure the inspector belongs to the admin's school
+        if (!$user->isSuperAdmin() && $user->school_id && $inspector->school_id !== $user->school_id) {
+            return redirect()->route('admin.inspectors')
+                ->with('error', __('Vous n\'avez pas la permission de modifier cet inspecteur.'));
+        }
+
         $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($inspector->id)],
         ];
-        
+
         // Only validate password if it's being updated
         if ($request->filled('password')) {
             $rules['password'] = ['required', 'confirmed', Rules\Password::defaults()];
         }
-        
+
         $request->validate($rules);
-        
+
         // Update basic info
         $inspector->name = $request->name;
         $inspector->email = $request->email;
-        
+
         // Update password if provided
         if ($request->filled('password')) {
             $inspector->password = Hash::make($request->password);
         }
-        
+
         $inspector->save();
-        
+
         return redirect()->route('admin.inspectors')
             ->with('success', __('Inspecteur mis à jour avec succès.'));
     }
@@ -184,20 +234,27 @@ class AdminController extends Controller
     public function toggleInspectorActive($id)
     {
         $inspector = User::findOrFail($id);
-        
+        $user = auth()->user();
+
         // Make sure the user is an inspector
         if (!$inspector->hasRole('inspector')) {
             return redirect()->route('admin.inspectors')
                 ->with('error', __('Cet utilisateur n\'est pas un inspecteur.'));
         }
-        
+
+        // CRITICAL: Ensure the inspector belongs to the admin's school
+        if (!$user->isSuperAdmin() && $user->school_id && $inspector->school_id !== $user->school_id) {
+            return redirect()->route('admin.inspectors')
+                ->with('error', __('Vous n\'avez pas la permission de modifier cet inspecteur.'));
+        }
+
         $inspector->is_active = !$inspector->is_active;
         $inspector->save();
-        
-        $message = $inspector->is_active 
+
+        $message = $inspector->is_active
             ? __('Inspecteur activé avec succès.')
             : __('Inspecteur désactivé avec succès.');
-            
+
         return redirect()->route('admin.inspectors')
             ->with('success', $message);
     }
@@ -211,22 +268,29 @@ class AdminController extends Controller
     public function deleteInspector($id)
     {
         $inspector = User::findOrFail($id);
-        
+        $user = auth()->user();
+
         // Make sure the user is an inspector
         if (!$inspector->hasRole('inspector')) {
             return redirect()->route('admin.inspectors')
                 ->with('error', __('Cet utilisateur n\'est pas un inspecteur.'));
         }
-        
+
+        // CRITICAL: Ensure the inspector belongs to the admin's school
+        if (!$user->isSuperAdmin() && $user->school_id && $inspector->school_id !== $user->school_id) {
+            return redirect()->route('admin.inspectors')
+                ->with('error', __('Vous n\'avez pas la permission de supprimer cet inspecteur.'));
+        }
+
         // Check if the inspector has any related records before deleting
         $canDelete = true;
         $reason = '';
-        
+
         // Delete the inspector if safe to do so
         if ($canDelete) {
             $name = $inspector->name;
             $inspector->delete();
-            
+
             return redirect()->route('admin.inspectors')
                 ->with('success', __('Inspecteur ":name" supprimé avec succès.', ['name' => $name]));
         } else {
@@ -234,4 +298,4 @@ class AdminController extends Controller
                 ->with('error', __('Impossible de supprimer l\'inspecteur: :reason', ['reason' => $reason]));
         }
     }
-} 
+}

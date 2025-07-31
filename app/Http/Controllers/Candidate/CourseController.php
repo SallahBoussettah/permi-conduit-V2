@@ -14,6 +14,30 @@ use Illuminate\Support\Facades\Auth;
 class CourseController extends Controller
 {
     /**
+     * Check if the user can access the given course based on school membership.
+     *
+     * @param  \App\Models\Course  $course
+     * @param  \App\Models\User|null  $user
+     * @return void
+     * @throws \Symfony\Component\HttpKernel\Exception\HttpException
+     */
+    private function authorizeSchoolAccess(Course $course, $user = null)
+    {
+        $user = $user ?: Auth::user();
+        
+        if ($user->school_id) {
+            // User has a school, course must belong to the same school
+            if ($course->school_id !== $user->school_id) {
+                abort(403, 'You do not have permission to access this course.');
+            }
+        } else {
+            // User has no school, can only access courses with no school (legacy courses)
+            if ($course->school_id !== null) {
+                abort(403, 'You do not have permission to access this course.');
+            }
+        }
+    }
+    /**
      * Display a listing of the courses.
      *
      * @return \Illuminate\View\View
@@ -24,6 +48,14 @@ class CourseController extends Controller
         $query = Course::with(['materials', 'completions' => function($query) use ($user) {
             $query->where('user_id', $user->id);
         }]);
+        
+        // CRITICAL: Filter by school - only show courses from the candidate's school
+        if ($user->school_id) {
+            $query->where('school_id', $user->school_id);
+        } else {
+            // If candidate has no school_id, only show courses with no school_id (legacy courses)
+            $query->whereNull('school_id');
+        }
         
         // Get user's permit categories
         $userPermitCategories = $user->permitCategories;
@@ -140,6 +172,9 @@ class CourseController extends Controller
     public function show(Course $course)
     {
         $user = Auth::user();
+        
+        // CRITICAL: Ensure the course belongs to the candidate's school
+        $this->authorizeSchoolAccess($course, $user);
         
         // Check if the course is associated with a permit category
         if ($course->permit_category_id) {
