@@ -24,8 +24,15 @@ class PermitCategoryController extends Controller
      */
     public function index()
     {
-        // Make sure to retrieve all permit categories regardless of status
-        $permitCategories = PermitCategory::orderBy('name')->paginate(10);
+        $user = Auth::user();
+        
+        // Get all permit categories with school-specific course counts
+        $permitCategories = PermitCategory::orderBy('name')
+            ->withCount(['courses' => function ($query) use ($user) {
+                $query->where('school_id', $user->school_id);
+            }])
+            ->paginate(10);
+            
         return view('inspector.permit-categories.index', compact('permitCategories'));
     }
 

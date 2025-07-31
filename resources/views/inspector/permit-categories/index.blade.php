@@ -65,7 +65,7 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $category->courses()->count() }}
+                                    {{ $category->courses_count }}
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500">
                                     {{ $category->description ?: 'Aucune description disponible' }}
