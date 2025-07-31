@@ -91,9 +91,17 @@ class QcmPaperPolicy
             return true;
         }
         
-        // Inspectors can only delete papers they created
-        if ($user->isInspector() && $qcmPaper->created_by === $user->id) {
-            return true;
+        // Inspectors can delete papers they created or papers associated with their school
+        if ($user->isInspector()) {
+            // Check if the user created the paper
+            if ($qcmPaper->created_by === $user->id) {
+                return true;
+            }
+            
+            // Check if the paper is associated with the user's school
+            if ($user->school_id && $qcmPaper->school_id === $user->school_id) {
+                return true;
+            }
         }
         
         return false;
