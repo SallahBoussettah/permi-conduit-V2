@@ -272,6 +272,15 @@
                                                     class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
                                                     placeholder="{{ __('Texte de la réponse') }}" required>
                                             </div>
+                                            <button type="button" class="remove-answer ml-3 text-red-600 hover:text-red-900"
+                                                style="display: none;">
+                                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                                    fill="currentColor">
+                                                    <path fill-rule="evenodd"
+                                                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                        clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
                                         </div>
                                     </div>
 
@@ -285,6 +294,15 @@
                                                     class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
                                                     placeholder="{{ __('Texte de la réponse') }}" required>
                                             </div>
+                                            <button type="button" class="remove-answer ml-3 text-red-600 hover:text-red-900"
+                                                style="display: none;">
+                                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                                    fill="currentColor">
+                                                    <path fill-rule="evenodd"
+                                                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                        clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -324,118 +342,190 @@
         </div>
     </div>
 
-    @push('scripts')
-        <script>
-            // Image preview functionality
-            function previewImage(input) {
-                if (input.files && input.files[0]) {
-                    const reader = new FileReader();
+    <script>
+        // Image preview functionality
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const previewContainer = document.getElementById('image-preview');
+                    const previewImg = document.getElementById('preview-img');
+                    previewImg.src = e.target.result;
+                    previewContainer.classList.remove('hidden');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
 
-                    reader.onload = function (e) {
-                        const previewContainer = document.getElementById('image-preview');
-                        const previewImg = document.getElementById('preview-img');
+        function clearImagePreview() {
+            const input = document.getElementById('image');
+            const previewContainer = document.getElementById('image-preview');
+            input.value = '';
+            previewContainer.classList.add('hidden');
+        }
 
-                        previewImg.src = e.target.result;
-                        previewContainer.classList.remove('hidden');
-                    };
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('DOM loaded, initializing...');
+            
+            const form = document.querySelector('form');
+            const questionTypeSelect = document.getElementById('question_type');
+            const answersContainer = document.getElementById('answers-container');
+            const addAnswerButton = document.getElementById('add-answer');
+            let answerCount = 2;
 
-                    reader.readAsDataURL(input.files[0]);
-                }
+            // Check if elements exist
+            if (!addAnswerButton) {
+                console.error('Add answer button not found!');
+                return;
+            }
+            if (!answersContainer) {
+                console.error('Answers container not found!');
+                return;
             }
 
-            function clearImagePreview() {
-                const input = document.getElementById('image');
-                const previewContainer = document.getElementById('image-preview');
+            console.log('All elements found, setting up functionality...');
 
-                input.value = '';
-                previewContainer.classList.add('hidden');
+            // Store the translated text
+            const answerPlaceholder = 'Texte de la réponse';
+
+            // Function to update answer indices
+            function updateAnswerIndices() {
+                const answerItems = document.querySelectorAll('.answer-item');
+                answerItems.forEach((item, index) => {
+                    const radio = item.querySelector('input[type="radio"]');
+                    const textInput = item.querySelector('input[type="text"]');
+                    if (radio) radio.name = `answers[${index}][is_correct]`;
+                    if (textInput) textInput.name = `answers[${index}][text]`;
+                });
+                answerCount = answerItems.length;
+                updateRemoveButtons();
             }
 
-            document.addEventListener('DOMContentLoaded', function () {
-                const form = document.querySelector('form');
-                form.addEventListener('submit', function (e) {
-                    // For debugging purposes only
-                    console.log('Form submission triggered');
-                    const formData = new FormData(this);
-                    const dataObj = {};
-                    for (const [key, value] of formData.entries()) {
-                        console.log(`${key}: ${value}`);
-                        dataObj[key] = value;
+            // Function to show/hide remove buttons
+            function updateRemoveButtons() {
+                const removeButtons = document.querySelectorAll('.remove-answer');
+                const answerItems = document.querySelectorAll('.answer-item');
+                removeButtons.forEach(button => {
+                    if (answerItems.length > 2 && questionTypeSelect.value !== 'yes_no') {
+                        button.style.display = 'block';
+                    } else {
+                        button.style.display = 'none';
                     }
-                    console.log('Form data:', dataObj);
                 });
+            }
 
-                const answersContainer = document.getElementById('answers-container');
-                const addAnswerButton = document.getElementById('add-answer');
-                let answerCount = 2;
+            // Function to set up Yes/No answers
+            function setYesNoAnswers() {
+                answersContainer.innerHTML = `
+                    <div class="answer-item p-4 border border-gray-200 rounded-md">
+                        <div class="flex items-center">
+                            <input type="radio" name="answers[0][is_correct]" value="1" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                            <div class="ml-3 flex-grow">
+                                <input type="text" name="answers[0][text]" value="Oui" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="answer-item p-4 border border-gray-200 rounded-md">
+                        <div class="flex items-center">
+                            <input type="radio" name="answers[1][is_correct]" value="1" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                            <div class="ml-3 flex-grow">
+                                <input type="text" name="answers[1][text]" value="Non" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" readonly>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                answerCount = 2;
+            }
 
-                addAnswerButton.addEventListener('click', function () {
-                    const newAnswer = document.createElement('div');
-                    newAnswer.className = 'answer-item p-4 border border-gray-200 rounded-md';
-                    newAnswer.innerHTML = `
-                                                <div class="flex items-center">
-                                                    <input type="radio" name="answers[${answerCount}][is_correct]" value="1" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
-                                                    <div class="ml-3 flex-grow">
-                                                        <input type="text" name="answers[${answerCount}][text]" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="{{ __('Texte de la réponse') }}" required>
-                                                    </div>
-                                                    <button type="button" class="remove-answer ml-3 text-red-600 hover:text-red-900">
-                                                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            `;
-
-                    answersContainer.appendChild(newAnswer);
-                    answerCount++;
-
-                    // Add event listener to the new remove button
-                    newAnswer.querySelector('.remove-answer').addEventListener('click', function () {
-                        newAnswer.remove();
-                    });
-                });
-
-                // Drag and drop functionality for image upload
-                const dropZone = document.querySelector('.border-dashed');
-
-                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                    dropZone.addEventListener(eventName, preventDefaults, false);
-                });
-
-                function preventDefaults(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-
-                ['dragenter', 'dragover'].forEach(eventName => {
-                    dropZone.addEventListener(eventName, highlight, false);
-                });
-
-                ['dragleave', 'drop'].forEach(eventName => {
-                    dropZone.addEventListener(eventName, unhighlight, false);
-                });
-
-                function highlight(e) {
-                    dropZone.classList.add('border-indigo-400', 'bg-indigo-50');
-                }
-
-                function unhighlight(e) {
-                    dropZone.classList.remove('border-indigo-400', 'bg-indigo-50');
-                }
-
-                dropZone.addEventListener('drop', handleDrop, false);
-
-                function handleDrop(e) {
-                    const dt = e.dataTransfer;
-                    const files = dt.files;
-
-                    if (files.length > 0) {
-                        const input = document.getElementById('image');
-                        input.files = files;
-                        previewImage(input);
+            // Handle question type change
+            questionTypeSelect.addEventListener('change', function() {
+                console.log('Question type changed to:', this.value);
+                if (this.value === 'yes_no') {
+                    setYesNoAnswers();
+                    addAnswerButton.style.display = 'none';
+                } else {
+                    addAnswerButton.style.display = 'inline-flex';
+                    // Reset to editable answers if switching from yes/no
+                    const firstAnswer = answersContainer.querySelector('input[name="answers[0][text]"]');
+                    const secondAnswer = answersContainer.querySelector('input[name="answers[1][text]"]');
+                    if (firstAnswer && firstAnswer.value === 'Oui') {
+                        firstAnswer.value = '';
+                        firstAnswer.removeAttribute('readonly');
                     }
+                    if (secondAnswer && secondAnswer.value === 'Non') {
+                        secondAnswer.value = '';
+                        secondAnswer.removeAttribute('readonly');
+                    }
+                    updateRemoveButtons();
                 }
             });
-        </script>
-    @endpush
+
+            // Add answer button functionality
+            addAnswerButton.addEventListener('click', function (e) {
+                e.preventDefault();
+                console.log('Add answer button clicked!');
+                
+                if (answerCount >= 4) {
+                    alert('Maximum 4 réponses autorisées');
+                    return;
+                }
+
+                const newAnswer = document.createElement('div');
+                newAnswer.className = 'answer-item p-4 border border-gray-200 rounded-md';
+                newAnswer.innerHTML = `
+                    <div class="flex items-center">
+                        <input type="radio" name="answers[${answerCount}][is_correct]" value="1" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                        <div class="ml-3 flex-grow">
+                            <input type="text" name="answers[${answerCount}][text]" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="${answerPlaceholder}" required>
+                        </div>
+                        <button type="button" class="remove-answer ml-3 text-red-600 hover:text-red-900">
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                `;
+
+                answersContainer.appendChild(newAnswer);
+                answerCount++;
+                console.log('New answer added, total count:', answerCount);
+
+                // Add event listener to the new remove button
+                newAnswer.querySelector('.remove-answer').addEventListener('click', function () {
+                    newAnswer.remove();
+                    updateAnswerIndices();
+                });
+
+                updateRemoveButtons();
+            });
+
+            // Add event listeners to existing remove buttons
+            document.querySelectorAll('.remove-answer').forEach(button => {
+                button.addEventListener('click', function() {
+                    this.closest('.answer-item').remove();
+                    updateAnswerIndices();
+                });
+            });
+
+            // Form validation
+            form.addEventListener('submit', function (e) {
+                const correctAnswers = document.querySelectorAll('input[name*="[is_correct]"]:checked');
+                if (correctAnswers.length !== 1) {
+                    e.preventDefault();
+                    alert('Veuillez sélectionner exactement une réponse correcte.');
+                    return false;
+                }
+            });
+
+            // Initialize
+            if (questionTypeSelect.value === 'yes_no') {
+                setYesNoAnswers();
+                addAnswerButton.style.display = 'none';
+            } else {
+                updateRemoveButtons();
+            }
+
+            console.log('Initialization complete!');
+        });
+    </script>
 @endsection

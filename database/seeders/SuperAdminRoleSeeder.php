@@ -22,10 +22,10 @@ class SuperAdminRoleSeeder extends Seeder
 
         // Create a default super admin user
         User::firstOrCreate(
-            ['email' => 'superadmin@example.com'],
+            ['email' => 'superadmin@ecf.com'],
             [
                 'name' => 'Super Admin',
-                'email' => 'superadmin@example.com',
+                'email' => 'superadmin@ecf.com',
                 'password' => Hash::make('password'),
                 'role_id' => $role->id,
                 'is_active' => true,
