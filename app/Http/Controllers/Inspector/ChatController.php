@@ -17,15 +17,23 @@ class ChatController extends Controller
      */
     public function index()
     {
-        // Get all active conversations
+        $user = Auth::user();
+        
+        // Get all active conversations from candidates in the same school
         $activeConversations = ChatConversation::waitingForInspector()
+            ->whereHas('candidate', function($query) use ($user) {
+                $query->where('school_id', $user->school_id);
+            })
             ->with('candidate')
             ->orderBy('created_at', 'desc')
             ->get();
             
-        // Get conversations this inspector is already involved in
+        // Get conversations this inspector is already involved in (from same school)
         $myConversations = ChatConversation::where('inspector_id', Auth::id())
             ->where('status', 'inspector_joined')
+            ->whereHas('candidate', function($query) use ($user) {
+                $query->where('school_id', $user->school_id);
+            })
             ->with('candidate')
             ->orderBy('updated_at', 'desc')
             ->get();
@@ -64,6 +72,14 @@ class ChatController extends Controller
      */
     public function show(ChatConversation $conversation)
     {
+        $user = Auth::user();
+        
+        // Ensure the conversation is from a candidate in the same school
+        if ($conversation->candidate->school_id !== $user->school_id) {
+            return redirect()->route('inspector.chat.index')
+                ->with('error', 'You can only view conversations from candidates in your school.');
+        }
+        
         // If this is a new conversation for this inspector, join it
         if ($conversation->status === 'active' && !$conversation->inspector_id) {
             $conversation->update([
@@ -123,6 +139,14 @@ class ChatController extends Controller
             'message' => 'required|string|max:1000',
         ]);
         
+        $user = Auth::user();
+        
+        // Ensure the conversation is from a candidate in the same school
+        if ($conversation->candidate->school_id !== $user->school_id) {
+            return redirect()->route('inspector.chat.index')
+                ->with('error', 'You can only send messages to candidates in your school.');
+        }
+        
         // Ensure the inspector has permission to send to this conversation
         if ($conversation->status !== 'inspector_joined' || $conversation->inspector_id !== Auth::id()) {
             return redirect()->route('inspector.chat.index')
@@ -160,6 +184,13 @@ class ChatController extends Controller
      */
     public function getNewMessages(Request $request, ChatConversation $conversation)
     {
+        $user = Auth::user();
+        
+        // Ensure the conversation is from a candidate in the same school
+        if ($conversation->candidate->school_id !== $user->school_id) {
+            return response()->json(['error' => 'Unauthorized - different school'], 403);
+        }
+        
         // Ensure the inspector has permission to view this conversation
         if (($conversation->status === 'inspector_joined' && $conversation->inspector_id !== Auth::id()) ||
             ($conversation->status === 'active' && $conversation->inspector_id)) {
@@ -192,6 +223,14 @@ class ChatController extends Controller
      */
     public function closeConversation(ChatConversation $conversation)
     {
+        $user = Auth::user();
+        
+        // Ensure the conversation is from a candidate in the same school
+        if ($conversation->candidate->school_id !== $user->school_id) {
+            return redirect()->route('inspector.chat.index')
+                ->with('error', 'You can only close conversations from candidates in your school.');
+        }
+        
         // Ensure the inspector has permission to close this conversation
         if ($conversation->status !== 'inspector_joined' || $conversation->inspector_id !== Auth::id()) {
             return redirect()->route('inspector.chat.index')

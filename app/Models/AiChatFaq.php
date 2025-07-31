@@ -21,6 +21,7 @@ class AiChatFaq extends Model
         'answer',
         'is_active',
         'created_by',
+        'school_id',
     ];
 
     /**
@@ -38,5 +39,13 @@ class AiChatFaq extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Get the school that owns this FAQ.
+     */
+    public function school(): BelongsTo
+    {
+        return $this->belongsTo(School::class);
     }
 } 

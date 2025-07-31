@@ -941,12 +941,13 @@
                                                         <div class="text-sm text-gray-500">{{ Str::limit($exam->paper->title, 30) }}</div>
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap">
-                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                                                    @if($exam->correct_answers_count >= 9) bg-green-100 text-green-800
-                                                                                    @elseif($exam->correct_answers_count >= 7) bg-yellow-100 text-yellow-800
-                                                                                    @elseif($exam->correct_answers_count >= 6) bg-orange-100 text-orange-800
-                                                                                    @else bg-red-100 text-red-800
-                                                                                    @endif">
+                                                        <span
+                                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                                                                                                                                                                                                                    @if($exam->correct_answers_count >= 9) bg-green-100 text-green-800
+                                                                                                                                                                                                                                    @elseif($exam->correct_answers_count >= 7) bg-yellow-100 text-yellow-800
+                                                                                                                                                                                                                                    @elseif($exam->correct_answers_count >= 6) bg-orange-100 text-orange-800
+                                                                                                                                                                                                                                    @else bg-red-100 text-red-800
+                                                                                                                                                                                                                                    @endif">
                                                             {{ $exam->correct_answers_count }}/10
                                                         </span>
                                                     </td>

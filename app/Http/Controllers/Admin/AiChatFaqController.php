@@ -14,7 +14,10 @@ class AiChatFaqController extends Controller
      */
     public function index()
     {
+        $user = Auth::user();
+        
         $faqs = AiChatFaq::with('creator')
+            ->where('school_id', $user->school_id)
             ->orderBy('created_at', 'desc')
             ->paginate(15);
             
@@ -47,6 +50,7 @@ class AiChatFaqController extends Controller
             'answer' => $request->answer,
             'is_active' => $request->boolean('is_active', true),
             'created_by' => Auth::id(),
+            'school_id' => Auth::user()->school_id,
         ]);
         
         return redirect()->route('admin.ai-chat-faqs.index')
@@ -58,6 +62,11 @@ class AiChatFaqController extends Controller
      */
     public function show(AiChatFaq $aiChatFaq)
     {
+        // Ensure the FAQ belongs to the admin's school
+        if ($aiChatFaq->school_id !== Auth::user()->school_id) {
+            abort(403, 'You can only view FAQs from your school.');
+        }
+        
         return view('admin.ai-chat-faqs.show', compact('aiChatFaq'));
     }
 
@@ -66,6 +75,11 @@ class AiChatFaqController extends Controller
      */
     public function edit(AiChatFaq $aiChatFaq)
     {
+        // Ensure the FAQ belongs to the admin's school
+        if ($aiChatFaq->school_id !== Auth::user()->school_id) {
+            abort(403, 'You can only edit FAQs from your school.');
+        }
+        
         return view('admin.ai-chat-faqs.edit', compact('aiChatFaq'));
     }
 
@@ -74,6 +88,11 @@ class AiChatFaqController extends Controller
      */
     public function update(Request $request, AiChatFaq $aiChatFaq)
     {
+        // Ensure the FAQ belongs to the admin's school
+        if ($aiChatFaq->school_id !== Auth::user()->school_id) {
+            abort(403, 'You can only update FAQs from your school.');
+        }
+        
         $request->validate([
             'trigger_phrase' => 'required|string|max:255',
             'question' => 'required|string|max:1000',
@@ -97,6 +116,11 @@ class AiChatFaqController extends Controller
      */
     public function destroy(AiChatFaq $aiChatFaq)
     {
+        // Ensure the FAQ belongs to the admin's school
+        if ($aiChatFaq->school_id !== Auth::user()->school_id) {
+            abort(403, 'You can only delete FAQs from your school.');
+        }
+        
         $aiChatFaq->delete();
         
         return redirect()->route('admin.ai-chat-faqs.index')
@@ -108,6 +132,11 @@ class AiChatFaqController extends Controller
      */
     public function toggleActive(AiChatFaq $aiChatFaq)
     {
+        // Ensure the FAQ belongs to the admin's school
+        if ($aiChatFaq->school_id !== Auth::user()->school_id) {
+            abort(403, 'You can only modify FAQs from your school.');
+        }
+        
         $aiChatFaq->update([
             'is_active' => !$aiChatFaq->is_active,
         ]);
@@ -121,7 +150,12 @@ class AiChatFaqController extends Controller
      */
     public function listConversations()
     {
+        $user = Auth::user();
+        
         $conversations = \App\Models\ChatConversation::with(['candidate', 'inspector'])
+            ->whereHas('candidate', function($query) use ($user) {
+                $query->where('school_id', $user->school_id);
+            })
             ->withCount('messages')
             ->orderBy('created_at', 'desc')
             ->paginate(15);
@@ -134,6 +168,13 @@ class AiChatFaqController extends Controller
      */
     public function viewConversation(\App\Models\ChatConversation $conversation)
     {
+        $user = Auth::user();
+        
+        // Ensure the conversation is from a candidate in the same school
+        if ($conversation->candidate->school_id !== $user->school_id) {
+            abort(403, 'You can only view conversations from candidates in your school.');
+        }
+        
         $messages = $conversation->messages()
             ->with('user')
             ->orderBy('created_at', 'asc')
